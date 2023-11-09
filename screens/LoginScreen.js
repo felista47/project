@@ -1,20 +1,23 @@
 import { View, Text,TextInput,StyleSheet, Button,Alert,TouchableHighlight,TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 
 
 const LoginScreen = () => {
+  const [email,setEmail]= useState('')
+  const [password,setPassword]= useState('')
+
   return (
     <View style={styles.container} >
       <View style={styles.credentials}>
         <View style={styles.inputContainer}>
         <Ionicons name="mail" size={32} color="green" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="Email"/>
+      <TextInput style={styles.input} placeholder="Email" value='email' onChangeText={text =>setEmail(text)}/>
         </View>
       <View style={styles.inputContainer}>
       <Ionicons name="eye-off" size={32} color="#EE6B22" style={styles.icon} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry/>
+      <TextInput style={styles.input} placeholder="Password" secureTextEntry value='password' onChangeText={text =>setPassword(text)}/>
       </View>
       <Text style={styles.text}>Forgot password?</Text>
       <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Login successful')}>
