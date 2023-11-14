@@ -1,26 +1,8 @@
 // import 'react-native-gesture-handler';
-import React from 'react'
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import VendorHomeScreen from './screens/VendorHomeScreen';
-import WelcomeScreen from './screens/WelcomeScreen';
-import LoginScreen from './screens/LoginScreen';
-import SignUpScreen from './screens/SignUpScreen';
+import React from 'react';
+import './firebase';
+import RootNavigation from './navigation/index';
 
-
-const Stack = createNativeStackNavigator();
-
-const App = () => {
-  return (
-    <NavigationContainer>
-    <Stack.Navigator>
-    {/* <Stack.Screen options={{headerShown:false}} name="Welcome" component={WelcomeScreen}/> */}
-    {/* <Stack.Screen options={{headerShown:false}} name="Login" component={LoginScreen}/> */}
-    <Stack.Screen options={{headerShown:false}} name="SignUp" component={SignUpScreen}/>
-      <Stack.Screen name="Home" component={VendorHomeScreen}/>
-    </Stack.Navigator>
-  </NavigationContainer>
-  )
+export default function App() {
+  return <RootNavigation />
 }
-
-export default App

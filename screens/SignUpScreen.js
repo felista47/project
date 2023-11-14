@@ -1,38 +1,69 @@
 import { View, Text,TextInput,StyleSheet, Button,Alert,TouchableHighlight,TouchableOpacity, KeyboardAvoidingView } from 'react-native'
-import React from 'react'
+import React ,{useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+
+const auth = getAuth()
+
+const SignUpScreen  = ({ navigation }) => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [validationMessage, setValidationMessage] = useState('')
 
 
-
-const SignUpScreen = () => {
+  let validateAndSet = (value,setValue) => {
+   setValue(value)
+}
+function checkPassword(firstpassword,secondpassword) {
+  if(firstpassword !== secondpassword){
+    setValidationMessage('Password do not match') 
+  }
+  else setValidationMessage('')
+}
+  async function createAccount() {
+    email === '' || password === '' 
+    ? setValidationMessage('required filled missing')
+    : ''
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigation.navigate('Sign In');
+    } catch (error) {
+      setValidationMessage(error.message);
+    }
+  }
   return (
     <KeyboardAvoidingView style={styles.container}>
-   
       <View style={styles.credentials}>
         <View style={styles.inputContainer}>
-        <Ionicons name="mail" size={32} color="#EE6B22" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="Email"/>
+         <Ionicons name="mail" size={32} color="#EE6B22" style={styles.icon}/>
+         <TextInput style={styles.input} value={email}
+          onChangeText={(text) => setEmail(text)} placeholder="Email"/>
         </View>
         <View style={styles.inputContainer}>
         <Ionicons name="person-circle" size={32} color="#58C2FD" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="user"/>
+        <TextInput style={styles.input} placeholder="user"/>
         </View>
         <View style={styles.inputContainer}>
         <Ionicons name="eye-off" size={32} color="#7282BC" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="password" secureTextEntry/>
+      <TextInput style={styles.input} placeholder="password" value={password}
+          onChangeText={(value) => validateAndSet(value, setPassword)} secureTextEntry/>
         </View>
       <View style={styles.inputContainer}>
       <Ionicons name="eye-off" size={32} color="green" style={styles.icon} />
-      <TextInput style={styles.input} placeholder="confirm Password" secureTextEntry/>
+      <TextInput style={styles.input} value={confirmPassword}
+          onChangeText={(value) => validateAndSet(value,setConfirmPassword)}
+          secureTextEntry placeholder="confirm Password" onBlur={()=>checkPassword(password,confirmPassword)}/>
       </View>
+      {<Text style={styles.error}>{validationMessage}</Text>}
       <Text style={styles.text}>Forgot password?</Text>
-      <TouchableOpacity style={styles.button} onPress={() => Alert.alert('registered successful')}>
+      <TouchableOpacity style={styles.button} onPress={createAccount}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Sign Up</Text>
     </TouchableOpacity>
       </View>
        <View>
        <Text style={styles.dontHave}>Already have an account?</Text>
-       <TouchableOpacity style={styles.buttonOne} onPress={() => Alert.alert('registered successful')}>
+       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('Sign in')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
     </TouchableOpacity>
     </View>

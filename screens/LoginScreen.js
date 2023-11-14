@@ -1,26 +1,41 @@
 import { View, Text,TextInput,StyleSheet, Button,Alert,TouchableHighlight,TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, {useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
+const auth = getAuth();
 
+const LoginScreen = ({ navigation}) => {
+  const [email,setEmail] = useState('');
+  const [password,setPassword] = useState('');
+  const [validationMessage,setvalidationMessage] = useState('');
+  
+  async function login() {
+    if (email === '' || password === '') {
+      setvalidationMessage('required filled missing')
+      return;
+    }
 
-const LoginScreen = () => {
-  const [email,setEmail]= useState('')
-  const [password,setPassword]= useState('')
-
+    try {
+      await signInWithEmailAndPassword(auth,email, password);
+    } catch (error) {
+     setvalidationMessage(error.message);
+    }
+  }
   return (
     <View style={styles.container} >
       <View style={styles.credentials}>
         <View style={styles.inputContainer}>
         <Ionicons name="mail" size={32} color="green" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="Email" value='email' onChangeText={text =>setEmail(text)}/>
+      <TextInput style={styles.input} placeholder="Email"  onChangeText={text =>setEmail(text)}/>
         </View>
       <View style={styles.inputContainer}>
       <Ionicons name="eye-off" size={32} color="#EE6B22" style={styles.icon} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry value='password' onChangeText={text =>setPassword(text)}/>
+      <TextInput style={styles.input} placeholder="Password" secureTextEntry  onChangeText={text =>setPassword(text)}/>
       </View>
+      {<Text style={styles.error}>{validationMessage}</Text>}
       <Text style={styles.text}>Forgot password?</Text>
-      <TouchableOpacity style={styles.button} onPress={() => Alert.alert('Login successful')}>
+      <TouchableOpacity style={styles.button} onPress={login}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
     </TouchableOpacity>
       </View>
@@ -29,7 +44,7 @@ const LoginScreen = () => {
        <View>
        <Text style={styles.dontHave}>Don't have an account?</Text>
 
-       <TouchableOpacity style={styles.buttonOne} onPress={() => Alert.alert('Login successful')}>
+       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('Sign Up')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>SignUp</Text>
     </TouchableOpacity>
     </View>
