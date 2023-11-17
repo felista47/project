@@ -27,7 +27,7 @@ function checkPassword(firstpassword,secondpassword) {
     : ''
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Sign In');
+      navigation.navigate('SignIn');
     } catch (error) {
       setValidationMessage(error.message);
     }

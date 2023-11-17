@@ -18,6 +18,7 @@ const LoginScreen = ({ navigation}) => {
 
     try {
       await signInWithEmailAndPassword(auth,email, password);
+      navigation.navigate('HomeVendor');
     } catch (error) {
      setvalidationMessage(error.message);
     }
@@ -44,7 +45,7 @@ const LoginScreen = ({ navigation}) => {
        <View>
        <Text style={styles.dontHave}>Don't have an account?</Text>
 
-       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('Sign Up')}>
+       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('SignUp')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>SignUp</Text>
     </TouchableOpacity>
     </View>
