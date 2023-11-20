@@ -63,7 +63,7 @@ function checkPassword(firstpassword,secondpassword) {
       </View>
        <View>
        <Text style={styles.dontHave}>Already have an account?</Text>
-       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('Sign in')}>
+       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('SignIn')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
     </TouchableOpacity>
     </View>
