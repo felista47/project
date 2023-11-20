@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import firebaseApp from '../firebase'; // Replace with your actual path
 
-const AddProduct = () => {
+const AddProductForm = () => {
   const [productName, setProductName] = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
@@ -27,22 +29,42 @@ const AddProduct = () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setProductImage(result.uri);
+    if (!result.canceled) {
+      setProductImage(result.assets);
     }
   };
 
-  const handleAddProduct = () => {
-    // Log the collected data to the console
-    console.log('Product Name:', productName);
-    console.log('Product Description:', productDescription);
-    console.log('Product Price:', productPrice);
-    console.log('Product Image URI:', productImage);
+  const handleAddProduct = async () => {
+    try {
+      const db = getFirestore(firebaseApp);
+      const productsCollection = collection(db, 'products');
+
+      const newProduct = {
+        name: productName,
+        Description: productDescription,
+        price: parseFloat(productPrice), // Convert to a numeric value
+        image: productImage,
+      };
+
+      const docRef = await addDoc(productsCollection, newProduct);
+      console.log('Product added with ID:', docRef.id);
+
+      // Clear form fields after adding the product
+      setProductName('');
+      setProductDescription('');
+      setProductPrice('');
+      setProductImage(null);
+
+      alert('Product added successfully!');
+    } catch (error) {
+      console.error('Error adding product:', error);
+      alert('An error occurred while adding the product.');
+    }
   };
 
   return (
     <View style={styles.container}>
-      {productImage && <Image source={{ uri: productImage }} style={styles.image} />}
+      {productImage && <Image source={{ assets: productImage }} style={styles.image} />}
       <Button title="Pick an image from camera roll" onPress={pickImage} />
       <TextInput
         style={styles.input}
@@ -86,4 +108,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddProduct;
+export default AddProductForm;
