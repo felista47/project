@@ -2,18 +2,31 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { useAuthentication } from '../authentication';
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useState } from 'react';
 
 
 const WelcomeScreen = () => {
   const { user } = useAuthentication();
   const navigation = useNavigation(); // Use the useNavigation hook
 
+  const [selectedAccount, setSelectedAccount] = useState(null);
+
+
   const handleAccountSelection = (accountType) => {
-    if (user) {
-      // If the user is logged in, navigate to UserStack
+    setSelectedAccount(accountType);
+
+    if (accountType === 'parent'){ 
+      
+      navigation.navigate('ParentLogin');
+    } else {
+      // If the user is not logged in,
+      navigation.navigate('ParentSignUp');
+    }
+    if (accountType === 'Vendor'){ 
+      
       navigation.navigate('SignIn');
     } else {
-      // If the user is not logged in, navigate to AuthStack
+      // If the user is not logged in,
       navigation.navigate('SignUp');
     }
   };

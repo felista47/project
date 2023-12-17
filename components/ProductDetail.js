@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, FlatList, StyleSheet,ScrollView,TouchableOpacity } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import firebaseApp from '../firebase';
 
 const ProductDetails = () => {
   const [products, setProducts] = useState([]);
-  const MAX_RETRIES = 5;
+  const MAX_RETRIES = 10;
   let retryCount = 0;
 
   useEffect(() => {
@@ -27,6 +27,7 @@ const ProductDetails = () => {
         console.error('Error fetching data:', error);
         if (retryCount < MAX_RETRIES) {
           retryCount++;
+          // Retry after a delay (e.g., 5 seconds)
           setTimeout(fetchData, 5000);
         }
       }
@@ -38,7 +39,7 @@ const ProductDetails = () => {
   if (products.length === 0) {
     return (
       <ScrollView style={styles.container}>
-        <Text> ALL PRODUCTS </Text>
+        <Text>ALL PRODUCTS</Text>
         <Text>Loading...</Text>
       </ScrollView>
     );
@@ -47,25 +48,25 @@ const ProductDetails = () => {
   return (
     <View style={styles.container}>
       <FlatList
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.flatlist}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.flatlist}
         data={products}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.products}>
-            <Image source={{ uri:item.image }} style={styles.image} />
+            <Image source={{ uri: item.image }} style={styles.image} />
             <View>
-            <Text>{item.name}</Text>
-            <Text>{item.description}</Text>
+              <Text>{item.name}</Text>
+              <Text>{item.description}</Text>
             </View>
             <Text>Ksh:{item.price}</Text>
           </View>
         )}
       />
-      <TouchableOpacity style={styles.buttonOne}  onPress={()=>navigation.navigate('addProduct')}>
-      <Text style={{ color: 'white', textAlign: 'center' }}>Add Product</Text>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.buttonOne} onPress={() => navigation.navigate('addProduct')}>
+        <Text style={{ color: 'white', textAlign: 'center' }}>Add Product</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -73,27 +74,27 @@ const ProductDetails = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    flexDirection:"row"
+    flexDirection: 'row',
   },
-  
+
   image: {
     width: 100,
     height: 100,
     borderRadius: 999,
     marginBottom: 16,
   },
-  products:{
-    padding:10,
-    alignItems:'center',
+  products: {
+    padding: 10,
+    alignItems: 'center',
     marginRight: 16,
   },
-  buttonOne:{
+  buttonOne: {
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#58C2FD',
     width: 150,
     alignSelf: 'center',
-    elevation: 8, 
+    elevation: 8,
     shadowOffset: {
       width: 0,
       height: 3,
