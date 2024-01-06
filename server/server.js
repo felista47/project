@@ -1,17 +1,10 @@
-// server.js
-const express = require('express');
-const mongoose = require('mongoose');
+const express = require("express");
+const path = require("path");
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = 'your-mongodb-connection-string';
+const connectDB = require("./database");
+connectDB();
 
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-
-app.get('/', (req, res) => {
-  res.send('Hello from the backend!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const server = app.listen(process.env.PORT || 5000);
+const portNumber = server.address().port;
+console.log(`Server is running on port ${portNumber}`);
