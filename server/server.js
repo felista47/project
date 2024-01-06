@@ -8,6 +8,9 @@ connectDB();
 // Middleware to parse JSON
 app.use(express.json());
 
+const vendorRouter = require('./routes/vendors')
+app.use('/vendor',vendorRouter)
+
 const parentRouter = require('./routes/parents')
 app.use('/parent',parentRouter)
 

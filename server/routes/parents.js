@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const Parent = require('../models/parent')
-
+const mongoose = require('mongoose')
 
 // get all parents
 router.get('/', async (req, res) => {
@@ -14,15 +14,16 @@ router.get('/', async (req, res) => {
   }
 });
 
-// get parent by id
+// get by id
 router.get('/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
     const parent = await Parent.findById(req.params.id);
-
     if (!parent) {
       return res.status(404).json({ error: 'Parent not found' });
     }
-
     res.json(parent);
   } catch (err) {
     console.error(err);
