@@ -29,37 +29,42 @@ router.get('/:id', async (req, res) => {
     }
   });
 // Create a new vendor instance
+
 router.post('/', async (req, res) => {
-const newVendor = new Vendor({
-  personalInformation: {
-    fullName: 'Vendor Full Name',
-    contactInformation: {
-      phoneNumber: '+1234567890',
-      emailAddress: 'vendor@example.com'
+  const { id, fullName, contactInfo, homeAddress, paymentDetails, additionalNotes, active ,servicesProvided} = req.body;
+
+  const vendor = new Vendor({
+    personalInformation: {
+      id: id,
+      fullName: fullName,
+      contactInformation: {
+        phoneNumber: contactInfo.phoneNumber,
+        emailAddress: contactInfo.emailAddress
+      },
+      homeAddress: homeAddress
     },
-    homeAddress: 'Vendor Home Address'
-  },
-  servicesProvided: ['ServiceA', 'ServiceB', 'ServiceC'],
-  paymentDetails: {
-    bankName: 'Vendor Bank',
-    accountHolderName: 'Vendor Account Holder',
-    accountNumber: '987654321',
-    routingNumber: '123456789'
-  },
-  preferredPaymentMethod: 'Bank Transfer',
-  additionalNotes: 'Additional notes about the vendor',
-  active: true
-});
-try {
+    servicesProvided,
+    paymentDetails: {
+      tillName: paymentDetails.tillName,
+      tillHolderName: paymentDetails.tillHolderName,
+      tillNumber: paymentDetails.tillNumber
+    },
+    additionalNotes: additionalNotes,
+    active: active
+  });
+
+  try {
     const savedVendor = await vendor.save();
     res.json(savedVendor);
-    console.log("vendor added succesfuly")
+    console.log("Vendor data added successfully");
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error saving parent data');
+    res.status(500).send('Error saving vendor data');
   }
 });
-// Save the vendor to the database
+
+
+// update vendor details
 router.patch('/:id', async (req, res) => {
     try {
       const vendor = await Vendor.findById(req.params.id);

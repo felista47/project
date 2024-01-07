@@ -33,44 +33,50 @@ router.get('/:id', async (req, res) => {
 
 // add a new parent
 router.post('/', async (req, res) => {
-  
-    const parent = new Parent({
-      personalInfo: {
-        id: req.body.id,
-        name: req.body.name,
-        contactInfo: {
-          phoneNumber: req.body.contactInfo.phoneNumber,
-          emailAddress: req.body.contactInfo.emailAddress
-        },
-        homeAddress: req.body.homeAddress
+  const { id, name, contactInfo, homeAddress, parentalDetails, children, financialInformation } = req.body;
+
+  const parent = new Parent({
+    personalInfo: {
+      id: id,
+      name: name,
+      contactInfo: {
+        phoneNumber: contactInfo.phoneNumber,
+        emailAddress: contactInfo.emailAddress
       },
-      parentalDetails: {
-        parentRelationship: req.body.parentalDetails.parentRelationship
-      },
-      studentInformation: {
-        childFullName:  req.body.studentInformation.childFullName,
-        gradeClass:  req.body.studentInformation.gradeClass,
-        studentID:  req.body.studentInformation.studentID
-      },
+      homeAddress: homeAddress
+    },
+    parentalDetails: {
+      parentRelationship: parentalDetails.parentRelationship
+    },
+    children: children.map(child => ({
+      childFullName: child.childFullName,
+      gradeClass: child.gradeClass,
+      studentID: child.studentID,
       financialInformation: {
-        allowanceAmount:  req.body.financialInformation.allowanceAmount,
-        allowanceFrequency:  req.body.financialInformation.allowanceFrequency
-      },
-      userAccountInformation: {
-        username:  req.body.userAccountInformation.username,
-        password:  req.body.userAccountInformation.password
+        allowanceBalAmount: child.financialInformation.allowanceBalAmount,
+        allowanceAmount: child.financialInformation.allowanceAmount,
+        allowanceFrequency: child.financialInformation.allowanceFrequency
       }
-    });
-  
-    try {
-      const savedParent = await parent.save();
-      res.json(savedParent);
-      console.log("parent added succesfuly")
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Error saving parent data');
+    })),
+
+    financialInformation: {
+      allowanceBalAmount: financialInformation.allowanceBalAmount,
+      allowanceAmount: financialInformation.allowanceAmount,
+      allowanceFrequency: financialInformation.allowanceFrequency
     }
   });
+
+  try {
+    const savedParent = await parent.save();
+    res.json(savedParent);
+    console.log("Parent added successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error saving parent data');
+  }
+});
+
+
 //  update parent details
 router.patch('/:id', async (req, res) => {
   try {
@@ -92,4 +98,5 @@ router.patch('/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
+
 module.exports = router

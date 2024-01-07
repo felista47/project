@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const vendorSchema = new mongoose.Schema({
   personalInformation: {
+    id:{
+      type: Number,
+      required: true,
+    },
     fullName: {
       type: String,
       required: true
@@ -28,24 +32,20 @@ const vendorSchema = new mongoose.Schema({
     }
   ],
   paymentDetails: {
-    bankName: {
+    tillName: {
+      type: String,
+      enum: ['M-PESA', 'Other'],
+      required: true
+    },
+    tillHolderName: {
       type: String,
       required: true
     },
-    accountHolderName: {
-      type: String,
-      required: true
-    },
-    accountNumber: {
+    tillNumber: {
       type: String,
       required: true
     },
 
-  },
-  preferredPaymentMethod: {
-    type: String,
-    enum: ['Bank Transfer', 'Other'], 
-    required: true
   },
   additionalNotes: {
     type: String

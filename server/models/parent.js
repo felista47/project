@@ -1,11 +1,41 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
+
+const childSchema = new mongoose.Schema({
+  childFullName: {
+    type: String,
+    required: true
+  },
+  gradeClass: {
+    type: String,
+    required: true
+  },
+  studentID: {
+    type: String,
+    required: true
+  },
+  financialInformation: {
+    allowanceBalAmount: {
+      type: Number,
+      required: false,
+    },
+    allowanceAmount: {
+      type: Number,
+      required: true
+    },
+    allowanceFrequency: {
+      type: String,
+      enum: ['Weekly', 'Monthly'],
+      required: true
+    }
+  },
+});
 
 const parentSchema = new mongoose.Schema({
   personalInfo: {
     id: {
-        type: String, 
-        required: true,
-      },
+      type: String,
+      required: true,
+    },
     name: {
       type: String,
       required: true
@@ -26,55 +56,29 @@ const parentSchema = new mongoose.Schema({
     }
   },
   parentalDetails: {
-    parentRelationship: [
-      {
-        relationship: {
-          type: String,
-          enum: ['Father', 'Mother'],
-          required: true
-        },
-        phoneNumber: {
-          type: String,
-          required: true
-        }
-      }
-    ]
-  },
-  studentInformation: {
-    childFullName: {
+    parentRelationship: {
       type: String,
+      enum: ['Father', 'Mother'],
       required: true
     },
-    gradeClass: {
-      type: String,
-      required: true
-    },
-    studentID: {
-      type: String,
-      required: true
-    }
   },
+  children: [childSchema], // Array of child documents
   financialInformation: {
+    allowanceBalAmount: {
+      type: Number,
+      required: false,
+    },
     allowanceAmount: {
       type: Number,
       required: true
     },
     allowanceFrequency: {
       type: String,
-      enum: ['Weekly', 'Monthly'], // Add other frequency options as needed
-      required: true
-    }
-  },
-  userAccountInformation: {
-    username: {
-      type: String,
-      required: true
-    },
-    password: {
-      type: String,
+      enum: ['Weekly', 'Monthly'],
       required: true
     }
   }
+ 
 });
 
 module.exports = mongoose.model('Parent', parentSchema);
