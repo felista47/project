@@ -1,9 +1,17 @@
-import { useAuthentication } from '../authentication';
-import UserStack from './userStack';
-import AuthStack from './authStack';
+import { createStackNavigator } from '@react-navigation/stack';
+import BottomTabNavigator from './BottomTabNavigator';
+import ProfileScreen from '../screens/ProfileScreen'; // Correct import
 
-export default function RootNavigation() {
-  const { user } = useAuthentication();
+const Stack = createStackNavigator();
 
-  return user ? <UserStack /> : <AuthStack />;
-}
+const MainNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Main" component={BottomTabNavigator} options={{ headerShown: false }} />
+            <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true}} />
+
+    </Stack.Navigator>
+  );
+};
+
+export default MainNavigator;
