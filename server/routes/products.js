@@ -33,26 +33,27 @@ router.get('/:id', async (req, res) => {
 
 // add a new product
 router.post('/', async (req, res) => {
-  const {  productName,productImage,productDescription,productAmount,available } = req.body;
+  const {  productName,productImage,productDescription,productAmount,productCategory,available } = req.body;
 
-  const parent = new Parent({
+  const product = new Product({
     
       productName,
       productImage,
       productDescription,
       productAmount,
+      productCategory,
       available
 
     
   });
 
   try {
-    const savedParent = await parent.save();
-    res.json(savedParent);
-    console.log("Parent added successfully");
+    const savedProduct = await product.save();
+    res.json(savedProduct);
+    console.log("Product added successfully");
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error saving parent data');
+    res.status(500).send('Error saving product data');
   }
 });
 

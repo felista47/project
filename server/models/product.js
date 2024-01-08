@@ -10,8 +10,13 @@ const productSchema = new mongoose.Schema({
     required: true
   },
 productDescription: {
-      type: Number,
-      required: false,
+      type: String,
+      required: true,
+    },
+    productCategory:{
+      type: String,
+      enum :['Food','stationery','others'],
+      required: true
     },
  productAmount: {
       type: Number,

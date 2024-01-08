@@ -17,7 +17,7 @@ app.use('/vendor',vendorRouter)
 const parentRouter = require('./routes/parents')
 app.use('/parent',parentRouter)
 
-const productRouter = require('./routes/product')
+const productRouter = require('./routes/products')
 app.use('/product',productRouter)
 
 const server = app.listen(process.env.PORT || 5000);
