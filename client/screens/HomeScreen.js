@@ -1,9 +1,11 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { faBell,faChartPie } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 
-let userId = '659a637c53a67e4a9f7593e9';
+let userId = '659a6d9253fb33f5d4909b90';
 
 const HomeScreen = () => {
 
@@ -12,44 +14,88 @@ const HomeScreen = () => {
   const navigateToProfile = () => {
     navigation.navigate('Profile'); 
   };
-
-  const [userName, setUserName] = useState(null);
-
+  const navigateToWithdraw = () => {
+    navigation.navigate('Withdraw'); 
+  };
+  const navigateToDeposit = () => {
+    navigation.navigate('Deposit'); 
+  };
+  const [parent, setParent] = useState(null);
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.54.120:5000/parent/${userId}`);
-      const userData = response.data;
-
-      // Assuming "name" is directly under "personalInfo"
-      const name = userData.personalInfo.name;
-
-      setUserName(name);
-    } catch (error) {
+      const response = await axios.get(`http://172.16.55.197:5000/parent/${userId}`,{ timeout: 5000 });
+      const parentData = response.data;
+      setParent(parentData); 
+       } 
+    catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
 
-  if (!userName) {
+  if (!parent) {
     return <Text>Loading...</Text>;
   }
 
   return (
-    <View style={styles.container}>
-      <View>
-        <View style={styles.userGreetings}>
-          <Text>
-            Hello {"\n"} 
-            {userName}
-          </Text>
+<View>
+      {/* top part contains user image links to account, notification and spending chart */}
+  <View style={styles.container}>
+<View style={styles.container}>
+  {/* profile pic */}
+   <TouchableOpacity style={styles.avatar} onPress={navigateToProfile}>
+     <Image style={styles.image} source={require('../assets/avatar.png')} />
+   </TouchableOpacity>
+   {/* USER GREETINGS */}
+   <View style={styles.userGreetings}>
+      <Text>
+         Hello {"\n"}{parent.personalInfo.name}
+      </Text>
+   </View>
+</View>
+<View>
+<FontAwesomeIcon icon={ faBell } />
+<FontAwesomeIcon icon={ faChartPie } />
+
+</View>
+  </View>
+      {/* balance of user account */}
+  <View>
+  {parent.children.map((child, index) => (
+        <View key={index}>
+          <Text> Balance {"\n"}  {child.financialInformation.allowanceAmount}</Text>
         </View>
-        <TouchableOpacity style={styles.avatar} onPress={navigateToProfile}>
-          <Image style={styles.image} source={require('../assets/avatar.png')} />
-      </TouchableOpacity>
+      ))}
+  </View>
+  {/* withdraw and deposit options */}
+  <View style={styles.fundsTransfer}>
+<TouchableOpacity style={styles.ButtonRed}onPress={navigateToDeposit} >
+  <Text>Deposit</Text>
+</TouchableOpacity>
+<TouchableOpacity style={styles.ButtonBlue} onPress={navigateToWithdraw} >
+<Text>Withdraw</Text>
+</TouchableOpacity>
+  </View>
+  {/* Transaction statement */}
+  <View>
+    <Text>Transaction Statement</Text>
+    <Text>See all</Text>
+  </View>
+  <ScrollView>
+    <View>
+      <View>
+        <Text>accountName</Text>
+        <Text>accountNumber</Text>
       </View>
+      <View>
+        <Text>- KSH 20</Text>
+        <Text>10 Jan 2024</Text>
+      </View>
+    </View>
+  </ScrollView>
     </View>
   );
 };

@@ -34,7 +34,7 @@ const ProfileScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.54.120:5000/parent/${userId}`);
+      const response = await axios.get(`http://172.16.55.175:5000/parent/${userId}`);
       const parentData = response.data;
 
       setParent(parentData);
@@ -51,7 +51,7 @@ const ProfileScreen = () => {
   const handleSavePress = async () => {
     try {
       // Make API request to update user data
-      await axios.patch(`http://172.16.54.120:5000/parent/${userId}`, editedData);
+      await axios.patch(`http://172.16.54.151:5000/parent/${userId}`, editedData);
 
       // Update local state with edited data
       setParent(editedData);
