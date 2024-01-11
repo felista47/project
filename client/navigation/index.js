@@ -11,10 +11,10 @@ const MainNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Main" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true}} />
-      <Stack.Screen name="Deposit" component={DepositScreen} options={{ headerShown: true}} />
-      <Stack.Screen name="Withdraw" component={WithdrawScreen} options={{ headerShown: true}} />
-      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: true}} />
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false}} />
+      <Stack.Screen name="Deposit" component={DepositScreen} options={{ headerShown: false}} />
+      <Stack.Screen name="Withdraw" component={WithdrawScreen} options={{ headerShown: false}} />
+      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false}} />
 
     </Stack.Navigator>
   );

@@ -1,5 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,Image, TextInput, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 
 
@@ -34,7 +36,7 @@ const ProfileScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.175:5000/parent/${userId}`);
+      const response = await axios.get(`http://172.16.55.0:5000/parent/${userId}`);
       const parentData = response.data;
 
       setParent(parentData);
@@ -51,7 +53,7 @@ const ProfileScreen = () => {
   const handleSavePress = async () => {
     try {
       // Make API request to update user data
-      await axios.patch(`http://172.16.54.151:5000/parent/${userId}`, editedData);
+      await axios.patch(`http://172.16.55.0:5000/parent/${userId}`, editedData);
 
       // Update local state with edited data
       setParent(editedData);
@@ -78,11 +80,43 @@ const ProfileScreen = () => {
 
   return (
 <ScrollView>
-      <Text>ProfileScreen</Text>
-      <Text>Name: {parent.personalInfo.name}</Text>
-      <Text>Phone Number: {parent.personalInfo.contactInfo.phoneNumber}</Text>
+   <Text>ACCOUNT</Text>
+   <View style={styles.accContainerOne}>
+      <View style={styles.containerProfile}>
+  {/* profile pic */}
+   <TouchableOpacity style={styles.avatar}>
+     <Image style={styles.image} source={require('../assets/avatar.png')} />
+   </TouchableOpacity>
+   {/* USER GREETINGS */}
+   <View style={styles.userMinInfo}>
+      <Text style={styles.text}>{parent.personalInfo.name}</Text>
+      <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
+   </View>
+
+      </View>
+      <TouchableOpacity><Text>Edit picture</Text></TouchableOpacity>
+   </View>
+   <View style={styles.accContainerTwo}>
+      <View>
+      <TouchableOpacity style={styles.ButtonBlue}>
+        <FontAwesomeIcon icon={ faScroll }/>
+      </TouchableOpacity>
+      <Text>Transaction Statement</Text>
+      </View>
+      <View>
+        <TouchableOpacity style={styles.ButtonRed}>
+          <FontAwesomeIcon icon={ faChartPie }/>
+        </TouchableOpacity>
+        <Text>My Spend</Text>
+      </View>
+    
+   </View>
+   <View>
+
+   </View>
+      {/* <Text>Name: {parent.personalInfo.name}</Text>
       <Text>Email Address: {parent.personalInfo.contactInfo.emailAddress}</Text>
-      <Text>Home Address: {parent.personalInfo.homeAddress}</Text>
+      <Text>Home Address: {parent.personalInfo.homeAddress}</Text> */}
 
       {/* Displaying child data */}
       {parent.children.map((child, index) => (
@@ -169,4 +203,6 @@ const ProfileScreen = () => {
 
 export default ProfileScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  
+});
