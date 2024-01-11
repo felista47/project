@@ -78,28 +78,20 @@ let userId = '659a6d9253fb33f5d4909b90';
     return <Text>Loading...</Text>;
   }
   return (
-    <ScrollView style={styles.parentContainer}>
-      <View style={styles.accItem}>
-        <Text>ID:</Text>
-        <Text> {parent.personalInfo.id}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Name: </Text>
-        <Text>{parent.personalInfo.name}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Phone Number:</Text>
-        <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Email Address: </Text>
-        <Text>{parent.personalInfo.contactInfo.emailAddress}</Text>
-      </View>
-      <View style={styles.accItem}>   
-        <Text>Home Address:</Text>
-        <Text>{parent.personalInfo.homeAddress}</Text>
-      </View>
+    <ScrollView>
+    
 
+      {/* Displaying child data */}
+      {parent.children.map((child, index) => (
+        <View key={index}>
+          <Text>Child {index + 1}</Text>
+          <Text>Child Full Name: {child.childFullName}</Text>
+          <Text>Grade/Class: {child.gradeClass}</Text>
+          <Text>Student ID: {child.studentID}</Text>
+          <Text>Allowance Amount: {child.financialInformation.allowanceAmount}</Text>
+          <Text>Allowance Frequency: {child.financialInformation.allowanceFrequency}</Text>
+        </View>
+      ))}
       {isEditing ? (
         <View>
           {/* Form for editing parent data */}
@@ -124,6 +116,37 @@ let userId = '659a6d9253fb33f5d4909b90';
             onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, homeAddress: text } })}
           />
 
+          {/* Form for editing child data */}
+          {editedData.children.map((child, index) => (
+            <View key={index}>
+              <Text>Child {index + 1}</Text>
+              <TextInput
+                placeholder={`Child ${index + 1} Full Name`}
+                value={child.childFullName}
+                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, childFullName: text } : c)) })}
+              />
+              <TextInput
+                placeholder={`Child ${index + 1} Grade/Class`}
+                value={child.gradeClass}
+                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, gradeClass: text } : c)) })}
+              />
+              <TextInput
+                placeholder={`Child ${index + 1} Student ID`}
+                value={child.studentID}
+                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, studentID: text } : c)) })}
+              />
+              <TextInput
+                placeholder={`Child ${index + 1} Allowance Amount`}
+                value={child.financialInformation.allowanceAmount.toString()}
+                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceAmount: Number(text) } } : c)) })}
+              />
+              <TextInput
+                placeholder={`Child ${index + 1} Allowance Frequency`}
+                value={child.financialInformation.allowanceFrequency}
+                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceFrequency: text } } : c)) })}
+              />
+            </View>
+          ))}
 
           <TouchableOpacity onPress={handleSavePress}>
             <Text>Save</Text>
@@ -141,28 +164,4 @@ let userId = '659a6d9253fb33f5d4909b90';
   );
 };
 
-
-export default Parent;
-const styles = StyleSheet.create({
-  accItem:{
-    width:'95%',
-    elevation:2,
-    height:100,
-    padding:20,
-    marginBottom:15,
-    borderRadius:10,
-    backgroundColor:'white',
-    alignSelf:'center',
-  },
-  accItemIcon:{
-    backgroundColor:'#58C2FD',
-    alignItems:'center',
-    paddingTop:10,
-    width:40,
-    height:40,
-    borderRadius:999,
-    marginLeft:20,
-    marginRight:30,
-  },
-
-})
+export default ProfileScreen;

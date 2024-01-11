@@ -1,34 +1,20 @@
 import { StyleSheet, Text, View, TouchableOpacity,Image, TextInput, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
+import { useNavigation } from '@react-navigation/native';
+import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 
 
 const ProfileScreen = () => {
   let userId = '659a6d9253fb33f5d4909b90';
+  const navigation = useNavigation();
+
+  const navigateToParent = () => {
+    navigation.navigate('Parent'); 
+  };
 
   const [parent, setParent] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    personalInfo: {
-      name: '',
-      contactInfo: {
-        phoneNumber: '',
-        emailAddress: '',
-      },
-      homeAddress: '',
-    },
-    parentalDetails: {
-      parentRelationship: '',
-    },
-    children: [],
-    financialInformation: {
-      allowanceBalAmount: 0,
-      allowanceAmount: 0,
-      allowanceFrequency: 'Weekly',
-    },
-  });
 
   useEffect(() => {
     fetchData();
@@ -36,168 +22,111 @@ const ProfileScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.0:5000/parent/${userId}`);
+      const response = await axios.get(`http://172.16.54.69:5000/parent/${userId}`);
       const parentData = response.data;
 
       setParent(parentData);
-      setEditedData(parentData);
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
 
-  const handleEditPress = () => {
-    setIsEditing(true);
-  };
-
-  const handleSavePress = async () => {
-    try {
-      // Make API request to update user data
-      await axios.patch(`http://172.16.55.0:5000/parent/${userId}`, editedData);
-
-      // Update local state with edited data
-      setParent(editedData);
-
-      // Exit edit mode
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating user data:', error);
-    }
-  };
-
-
-  const handleCancelPress = () => {
-    // Reset editedData to current parent data
-    setEditedData(parent);
-
-    // Exit edit mode
-    setIsEditing(false);
-  };
 
   if (!parent) {
     return <Text>Loading...</Text>;
   }
 
   return (
-<ScrollView>
-   <Text>ACCOUNT</Text>
+<ScrollView style={styles.mainContainer}>
+   <Text style={styles.mainContainerName}>ACCOUNT</Text>
    <View style={styles.accContainerOne}>
       <View style={styles.containerProfile}>
-  {/* profile pic */}
-   <TouchableOpacity style={styles.avatar}>
-     <Image style={styles.image} source={require('../assets/avatar.png')} />
-   </TouchableOpacity>
-   {/* USER GREETINGS */}
+          {/* profile pic */}
+          <TouchableOpacity style={styles.avatar}>
+            <Image style={styles.image} source={require('../assets/avatar.png')} />
+          </TouchableOpacity>
+          {/* USER GREETINGS */}
    <View style={styles.userMinInfo}>
       <Text style={styles.text}>{parent.personalInfo.name}</Text>
       <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
    </View>
 
       </View>
-      <TouchableOpacity><Text>Edit picture</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.ButtonBlue}><Text>Edit picture</Text></TouchableOpacity>
    </View>
+
    <View style={styles.accContainerTwo}>
       <View>
       <TouchableOpacity style={styles.ButtonBlue}>
         <FontAwesomeIcon icon={ faScroll }/>
       </TouchableOpacity>
-      <Text>Transaction Statement</Text>
+      <Text style={styles.buttonText}>Transaction Statement</Text>
       </View>
       <View>
         <TouchableOpacity style={styles.ButtonRed}>
           <FontAwesomeIcon icon={ faChartPie }/>
         </TouchableOpacity>
-        <Text>My Spend</Text>
+        <Text style={styles.buttonText}>My Spend</Text>
       </View>
     
    </View>
-   <View>
 
-   </View>
-      {/* <Text>Name: {parent.personalInfo.name}</Text>
-      <Text>Email Address: {parent.personalInfo.contactInfo.emailAddress}</Text>
-      <Text>Home Address: {parent.personalInfo.homeAddress}</Text> */}
+   {/* link to parent personal account info */}
+   <TouchableOpacity style={styles.accItem} onPress={navigateToParent}>
+      <View  style={styles.accItemIcon} >
+        <FontAwesomeIcon icon={ faUser }/>
+      </View>
+      <View>
+        <Text>Account</Text>
+        <Text>personal details,edit details,delete account</Text>
+      </View>
+    </TouchableOpacity>
+    
+    <TouchableOpacity style={styles.accItem}>
+      <View  style={styles.accItemIcon} >
+        <FontAwesomeIcon icon={ faChildren }/>
+      </View>
+      <View>
+        <Text>Child Details</Text>
+        <Text>student details,edit details</Text>
+      </View> 
+    </TouchableOpacity>
 
-      {/* Displaying child data */}
-      {parent.children.map((child, index) => (
-        <View key={index}>
-          <Text>Child {index + 1}</Text>
-          <Text>Child Full Name: {child.childFullName}</Text>
-          <Text>Grade/Class: {child.gradeClass}</Text>
-          <Text>Student ID: {child.studentID}</Text>
-          <Text>Allowance Amount: {child.financialInformation.allowanceAmount}</Text>
-          <Text>Allowance Frequency: {child.financialInformation.allowanceFrequency}</Text>
-        </View>
-      ))}
-      {isEditing ? (
-        <View>
-          {/* Form for editing parent data */}
-          <TextInput
-            placeholder="Name"
-            value={editedData.personalInfo.name}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, name: text } })}
-          />
-          <TextInput
-            placeholder="Phone Number"
-            value={editedData.personalInfo.contactInfo.phoneNumber}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, phoneNumber: text } } })}
-          />
-          <TextInput
-            placeholder="Email Address"
-            value={editedData.personalInfo.contactInfo.emailAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, emailAddress: text } } })}
-          />
-          <TextInput
-            placeholder="Home Address"
-            value={editedData.personalInfo.homeAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, homeAddress: text } })}
-          />
+    <TouchableOpacity style={styles.accItem}>
+      <View  style={styles.accItemIcon} >
+      <FontAwesomeIcon icon={ faBell }/>
+      </View>
+      
+      <View>
+        <Text>Notification</Text>
+        <Text>spending notification</Text>
+      </View>
+    </TouchableOpacity>
 
-          {/* Form for editing child data */}
-          {editedData.children.map((child, index) => (
-            <View key={index}>
-              <Text>Child {index + 1}</Text>
-              <TextInput
-                placeholder={`Child ${index + 1} Full Name`}
-                value={child.childFullName}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, childFullName: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Grade/Class`}
-                value={child.gradeClass}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, gradeClass: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Student ID`}
-                value={child.studentID}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, studentID: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Allowance Amount`}
-                value={child.financialInformation.allowanceAmount.toString()}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceAmount: Number(text) } } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Allowance Frequency`}
-                value={child.financialInformation.allowanceFrequency}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceFrequency: text } } : c)) })}
-              />
-            </View>
-          ))}
+    <TouchableOpacity style={styles.accItem}>
+      <View  style={styles.accItemIcon} >
+      <FontAwesomeIcon icon={ faGears }/>
+      </View>
+      
+      <View>
+        <Text>App setting</Text>
+        <Text>dark mode</Text>
+      </View>
+    </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleSavePress}>
-            <Text>Save</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCancelPress}>
-            <Text>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity onPress={handleEditPress}>
-          <Text>Edit</Text>
-        </TouchableOpacity>
-      )}
-    </ScrollView>
+    <TouchableOpacity style={styles.accItem}>
+      <View  style={styles.accItemIcon} >
+        <FontAwesomeIcon icon={ faQuestion }/>
+      </View>
+      <View>
+        <Text>Help</Text>
+        <Text>Help center, contact us</Text>
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.accButtonRed}><Text>LogOut</Text></TouchableOpacity>
+ 
+  </ScrollView>
   );
 };
 
@@ -205,4 +134,113 @@ export default ProfileScreen;
 
 const styles = StyleSheet.create({
   
+  mainContainer:{
+    backgroundColor:'#ECF6FC',
+    paddingTop:30,
+    marginBottom:30,
+  },
+  mainContainerName:{
+    fontSize:30,
+    alignSelf:'center',
+  },
+  accContainerOne: {
+    paddingTop:40,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  containerProfile:{
+    padding:10,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  image: {
+    width: 50,
+    height: 50,
+    borderRadius: 999,
+  },
+  userMinInfo: {
+    marginLeft: 20,
+  },
+  text: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  accContainerTwo:{
+    padding:10,
+    width:'90%',
+    alignSelf:'center',
+    marginTop: 15,
+    flexDirection:'row',
+    justifyContent:'space-between',    
+  },
+  buttonText:{
+    fontSize:15,
+  },
+  ButtonBlue:{
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#58C2FD',
+    width: 150,
+    alignSelf: 'center',
+    alignItems:'center',
+    elevation: 8, 
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
+},
+ButtonRed:{
+  borderRadius: 20,
+  padding: 10,
+  backgroundColor: '#EE6B22',
+  width: 150,
+  alignSelf: 'center',
+  alignItems:'center',
+  elevation: 8, 
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+  shadowRadius: 6,
+},
+  accButtonRed:{
+      borderRadius: 20,
+      padding: 10,
+      backgroundColor: '#EE6B22',
+      width: 150,
+      marginBottom:50,
+      alignSelf: 'center',
+      alignItems:'center',
+      elevation: 8, 
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      shadowRadius: 6,
+  },
+  accItem:{
+    width:'95%',
+    elevation:2,
+    height:100,
+    padding:10,
+    marginBottom:15,
+    borderRadius:10,
+    flexDirection:'row',
+    backgroundColor:'white',
+    alignSelf:'center',
+    alignItems:'center',
+  },
+  accItemIcon:{
+    backgroundColor:'#58C2FD',
+    alignItems:'center',
+    paddingTop:10,
+    width:40,
+    height:40,
+    borderRadius:999,
+    marginLeft:20,
+    marginRight:30,
+  },
 });

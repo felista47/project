@@ -42,7 +42,7 @@ const HomeScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.0:5000/parent/${userId}`,{ timeout: 5000 });
+      const response = await axios.get(`http://172.16.54.69:5000/parent/${userId}`,{ timeout: 5000 });
       const parentData = response.data;
       setParent(parentData); 
        } 
