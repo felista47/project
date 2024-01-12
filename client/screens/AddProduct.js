@@ -50,13 +50,12 @@ const AddProduct = () => {
   
 
   const handleAddProduct = async () => {
-    console.log('here is the product',product.productImage)
     try {
-      const response = await axios.post('http://172.16.87.224:5000/product', product, {
+      const response = await axios.post('http://172.16.87.225:5000/product', product, {
       
       });
   
-      console.log('Product added successfully:', response.data);
+      console.log('Product added successfully:',);
   
       // Clear form fields after adding the product
       setProduct({
@@ -98,6 +97,7 @@ const AddProduct = () => {
             onValueChange={(text) => setProduct({ ...product,productCategory: text  })}
             style={styles.input}
           >
+            <Picker.Item label="Pick a category" value="" />
             <Picker.Item label="Food" value="Food" />
             <Picker.Item label="Stationery" value="stationery" />
             <Picker.Item label="Other" value="Other" />

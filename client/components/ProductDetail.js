@@ -55,7 +55,6 @@ const ProductDetails = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.products}>
-            <Image source={{ uri: item.image }} style={styles.image} />
             <View>
               <Text>{item.name}</Text>
               <Text>{item.description}</Text>
