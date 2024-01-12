@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity ,FlatList,Image, ScrollView} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity ,TextInput,Image, ScrollView} from 'react-native';
 import axios from 'axios';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
-const ProductList = ({ navigation }) => {
+
+const ProductList = ({}) => {
   const [products, setProducts] = useState([]);
+  const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-
+ 
   useEffect(() => {
     // Default category, you can set it to any default value
     handleCategory('Food');
@@ -37,10 +40,39 @@ const ProductList = ({ navigation }) => {
     } catch (error) {
       console.error('Error fetching products data:', error);
     }};
-
+    const handleSearch = async () => {
+      try {
+        const response = await axios.get(`http://172.16.87.225:5000/product/Search/search?query=${query}`, {
+          timeout: 5000,
+        });
+    
+        const searchResults = response.data;
+        setProducts(searchResults);
+        setSelectedCategory('Search results'); // Clear selected category
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+      }
+    };
+ 
    
   return (
     <View style={styles.containerCategoryMain}>
+          <View style={styles.main}>
+      <View style={styles.inputSection}>
+      <TextInput
+            placeholder='Search'
+            style={styles.input}
+            onChangeText={(text) => setQuery(text)}
+          />
+
+        <TouchableOpacity onPress={handleSearch}>
+          <Ionicons name="search" size={24} color='black' />
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity style={styles.cart}>
+        <Ionicons name="cart" size={40} color='white' />
+      </TouchableOpacity>
+    </View>
       <View>
         <View style={styles.containerCategory}>
         <TouchableOpacity style={styles.buttonBlue} onPress={() => handleCategory('Food')}>
@@ -87,6 +119,29 @@ const ProductList = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  main:{
+    padding: 20,
+    justifyContent:"space-around",
+    alignItems:"center",
+    flexDirection:"row"
+},
+inputSection:{
+    width: '80%',
+    justifyContent:"space-around",
+    alignItems:"center",
+    flexDirection:"row",
+    backgroundColor:"white",
+    borderRadius: 7
+},
+input:{
+    height: 40,
+    backgroundColor: "white",
+    width: "85%"
+},
+cart:{
+    backgroundColor:'#58C2FD',
+    borderRadius: 999,
+},
   containerCategory: {
     width: '90%',
     marginTop: 15,

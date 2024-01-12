@@ -4,9 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
-import SearchComponent from '../components/SearchComponent';
 import CategoryComponet from '../components/CategoryComponet';
-// import ProductDetail from '../components/ProductDetail';
 
 const VendorHomeScreen = ({navigation}) => {
 
@@ -65,9 +63,7 @@ const VendorHomeScreen = ({navigation}) => {
               <FontAwesomeIcon icon={ faChartPie } />
             </View>
        </View>
-      <SearchComponent/>
       <CategoryComponet/>
-      {/* <ProductDetail/> */}
       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('AddProduct')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Add Product</Text>
     </TouchableOpacity>
