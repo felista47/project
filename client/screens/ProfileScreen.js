@@ -22,7 +22,7 @@ const ProfileScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.54.69:5000/parent/${userId}`);
+      const response = await axios.get(`http://172.16.87.224:5000/parent/${userId}`);
       const parentData = response.data;
 
       setParent(parentData);

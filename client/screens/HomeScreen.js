@@ -5,9 +5,10 @@ import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 
-let userId = '659a6c6e53fb33f5d4909b8d';
 
 const HomeScreen = () => {
+  let userId = '659a6c6e53fb33f5d4909b8d';
+
 
   const navigation = useNavigation();
   
@@ -42,7 +43,7 @@ const HomeScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.54.69:5000/parent/${userId}`,{ timeout: 5000 });
+      const response = await axios.get(`http://172.16.87.225:5000/parent/${userId}`,{ timeout: 5000 });
       const parentData = response.data;
       setParent(parentData); 
        } 
