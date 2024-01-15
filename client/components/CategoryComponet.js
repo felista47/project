@@ -8,17 +8,18 @@ const ProductList = ({}) => {
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
+  const [cartProducts, setCartProducts] = useState([]);
 
  
   useEffect(() => {
-    // Default category, you can set it to any default value
     handleCategory('Food');
     handleCategoryAll();
 
   }, []);
   const handleCategoryAll = async () => {
     try {
-      const response = await axios.get(`http://172.16.87.225:5000/product/`, {
+      const response = await axios.get(`http://172.16.55.136:5000/product/`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -28,9 +29,10 @@ const ProductList = ({}) => {
     } catch (error) {
       console.error('Error fetching products data:', error);
     }};
+
   const handleCategory = async (category) => {
     try {
-      const response = await axios.get(`http://172.16.87.225:5000/product/category/${category}`, {
+      const response = await axios.get(`http://172.16.55.136:5000/product/category/${category}`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -40,9 +42,10 @@ const ProductList = ({}) => {
     } catch (error) {
       console.error('Error fetching products data:', error);
     }};
-    const handleSearch = async () => {
+
+  const handleSearch = async () => {
       try {
-        const response = await axios.get(`http://172.16.87.225:5000/product/Search/search?query=${query}`, {
+        const response = await axios.get(`http://172.16.55.136:5000/product/Search/search?query=${query}`, {
           timeout: 5000,
         });
     
@@ -53,7 +56,56 @@ const ProductList = ({}) => {
         console.error('Error fetching search results:', error);
       }
     };
- 
+
+ const handleCartPress = (product) => {
+      // Check if the product is already in the cart
+      const existingProductIndex = cartProducts.findIndex((p) => p._id === product._id);
+    
+      if (existingProductIndex !== -1) {
+        // If already in the cart, display a button with a plus and delete sign
+        return (
+          <View style={styles.cartCountSection}>
+            <TouchableOpacity onPress={() => handleDecreaseCartItem(existingProductIndex)}>
+              <Ionicons name="remove" size={20} color="black" />
+            </TouchableOpacity>
+            <Text>{cartProducts[existingProductIndex].count}</Text>
+            <TouchableOpacity onPress={() => handleRemoveCartItem(existingProductIndex)}>
+              <Ionicons name="trash" size={20} color="black" />
+            </TouchableOpacity>
+          </View>
+        );
+      } else {
+        // If not in the cart, display button with "Add To Cart" text
+        return (
+          <TouchableOpacity style={styles.buttonCart} onPress={() => handleAddToCart(product)}>
+            <Text>Add To Cart</Text>
+          </TouchableOpacity>
+        );
+      }
+    };
+    
+    const handleAddToCart = (product) => {
+      // Add the product to the cart with an initial count of 1
+      setCartProducts([...cartProducts, { ...product, count: 1 }]);
+      setCartCount(cartCount + 1);
+    };
+    
+    const handleDecreaseCartItem = (index) => {
+      // Decrease the count of the item in the cart
+      const updatedCart = [...cartProducts];
+      updatedCart[index].count = Math.max(updatedCart[index].count - 1, 0);
+      setCartProducts(updatedCart);
+      setCartCount(cartCount - 1);
+    };
+    
+    const handleRemoveCartItem = (index) => {
+      // Remove the item from the cart
+      const updatedCart = [...cartProducts];
+      updatedCart.splice(index, 1);
+      setCartProducts(updatedCart);
+      setCartCount(cartCount - 1);
+    };
+    
    
   return (
     <View style={styles.containerCategoryMain}>
@@ -70,7 +122,7 @@ const ProductList = ({}) => {
         </TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.cart}>
-        <Ionicons name="cart" size={40} color='white' />
+        <Ionicons name="cart" size={40} color='white'>{cartCount}</Ionicons>
       </TouchableOpacity>
     </View>
       <View>
@@ -108,6 +160,9 @@ const ProductList = ({}) => {
             <Text>{item.productDescription}</Text>
           </View>
           <Text>Ksh: {item.productAmount}</Text>
+          <TouchableOpacity style={styles.buttonCart} onPress={handleCartPress}> 
+            <Text>Add To Cart</Text>
+          </TouchableOpacity>
           </View>
       ))}
     </ScrollView>
@@ -204,6 +259,20 @@ buttonPurple:{
   },
   shadowRadius: 6,
 },
+buttonCart:{
+  borderRadius: 20,
+  padding: 10,
+  backgroundColor: '#EE6B22',
+  width: 100,
+  alignSelf: 'center',
+  alignItems:'center',
+  elevation: 8, 
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+  shadowRadius: 6,
+},
 image: {
   width: 100,
   height: 100,
@@ -215,17 +284,6 @@ productItem: {
   alignItems: 'center',
   marginRight: 16,
 },
-// scrollView: {
-//   paddingVertical: 10,
-// },
-// productContainer: {
-//   marginRight: 10,
-// },
-// products: {
-//   flex: 1,
-//   flexDirection: 'column',
-//   alignItems: 'center',
-// },
 scrollView:{
   width:'99%',
   marginTop:40,

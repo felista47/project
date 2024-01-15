@@ -30,20 +30,26 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
-
+// //getby product category
+router.get('/category/:category', async (req, res) => {
+  const category = req.params.category;
+  try {
+    const products = await Product.find({ productCategory: category });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 // add a new product
 router.post('/', async (req, res) => {
-  const {  productName,productImage,productDescription,productAmount,productCategory,available } = req.body;
+  const {  productImage,productName,productDescription,productCategory,productAmount,} = req.body;
 
   const product = new Product({
-    
+    productImage,
       productName,
-      productImage,
       productDescription,
-      productAmount,
       productCategory,
-      available
-
+      productAmount,
     
   });
 
@@ -56,7 +62,6 @@ router.post('/', async (req, res) => {
     res.status(500).send('Error saving product data');
   }
 });
-
 
 //  update product details
 router.patch('/:id', async (req, res) => {
@@ -77,6 +82,32 @@ router.patch('/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
+  }
+});
+// search componets
+router.get('/Search/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+
+    // Use a regex to perform a case-insensitive search
+    const regex = new RegExp(query, 'i');
+
+    const searchResults = await Product.find({
+      $or: [
+        { productName: { $regex: regex } },
+        { productDescription: { $regex: regex } },
+        { productCategory: { $regex: regex } },
+      ],
+    });
+
+    res.json(searchResults);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

@@ -31,7 +31,7 @@ const VendorHomeScreen = ({navigation}) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.87.225:5000/parent/${userId}`,{ timeout: 5000 });
+      const response = await axios.get(`http://172.16.55.144:5000/parent/${userId}`,{ timeout: 5000 });
       const parentData = response.data;
       setParent(parentData); 
        } 
