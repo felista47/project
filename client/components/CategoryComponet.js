@@ -10,8 +10,9 @@ const ProductList = ({}) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [cartCount, setCartCount] = useState(0);
   const [cartProducts, setCartProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showButtons, setShowButtons] = useState(false);
 
- 
   useEffect(() => {
     handleCategory('Food');
     handleCategoryAll();
@@ -19,7 +20,7 @@ const ProductList = ({}) => {
   }, []);
   const handleCategoryAll = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.136:5000/product/`, {
+      const response = await axios.get(`http://172.16.55.62:5000/product/`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -32,7 +33,7 @@ const ProductList = ({}) => {
 
   const handleCategory = async (category) => {
     try {
-      const response = await axios.get(`http://172.16.55.136:5000/product/category/${category}`, {
+      const response = await axios.get(`http://172.16.55.62:5000/product/category/${category}`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -45,7 +46,7 @@ const ProductList = ({}) => {
 
   const handleSearch = async () => {
       try {
-        const response = await axios.get(`http://172.16.55.136:5000/product/Search/search?query=${query}`, {
+        const response = await axios.get(`http://172.16.55.62:5000/product/Search/search?query=${query}`, {
           timeout: 5000,
         });
     
@@ -57,59 +58,44 @@ const ProductList = ({}) => {
       }
     };
 
- const handleCartPress = (product) => {
-      // Check if the product is already in the cart
-      const existingProductIndex = cartProducts.findIndex((p) => p._id === product._id);
-    
-      if (existingProductIndex !== -1) {
-        // If already in the cart, display a button with a plus and delete sign
-        return (
-          <View style={styles.cartCountSection}>
-            <TouchableOpacity onPress={() => handleDecreaseCartItem(existingProductIndex)}>
-              <Ionicons name="remove" size={20} color="black" />
-            </TouchableOpacity>
-            <Text>{cartProducts[existingProductIndex].count}</Text>
-            <TouchableOpacity onPress={() => handleRemoveCartItem(existingProductIndex)}>
-              <Ionicons name="trash" size={20} color="black" />
-            </TouchableOpacity>
-          </View>
-        );
-      } else {
-        // If not in the cart, display button with "Add To Cart" text
-        return (
-          <TouchableOpacity style={styles.buttonCart} onPress={() => handleAddToCart(product)}>
-            <Text>Add To Cart</Text>
-          </TouchableOpacity>
-        );
-      }
-    };
-    
-    const handleAddToCart = (product) => {
-      // Add the product to the cart with an initial count of 1
-      setCartProducts([...cartProducts, { ...product, count: 1 }]);
+    const handleCartPress = (productId) => {
+      setSelectedProduct(productId);
+      setShowButtons(true);
+      setCartProducts(prevCart => [...prevCart, { ...products.find(item => item._id === productId), count: 1 }]);
       setCartCount(cartCount + 1);
     };
     
-    const handleDecreaseCartItem = (index) => {
-      // Decrease the count of the item in the cart
-      const updatedCart = [...cartProducts];
-      updatedCart[index].count = Math.max(updatedCart[index].count - 1, 0);
+    const handleDecreaseCartItem = (productId) => {
+      const updatedCart = cartProducts.map(product => {
+        if (product._id === productId) {
+          const updatedCount = Math.max(product.count - 1, 0);
+          setCartCount(updatedCount);
+          if (updatedCount === 0) {
+            // If count is reduced to zero, hide buttons
+            setShowButtons(false);
+          }
+          return { ...product, count: updatedCount };
+        }
+        return product;
+      });
       setCartProducts(updatedCart);
-      setCartCount(cartCount - 1);
     };
     
-    const handleRemoveCartItem = (index) => {
-      // Remove the item from the cart
-      const updatedCart = [...cartProducts];
-      updatedCart.splice(index, 1);
+    
+    const handleIncreaseCartItem = (productId) => {
+      const updatedCart = cartProducts.filter(product => product._id !== productId);
       setCartProducts(updatedCart);
-      setCartCount(cartCount - 1);
+      setCartCount(cartCount + 1);
+      // setShowButtons(false); // Hide buttons after increasing cart item
     };
     
-   
+    const cart = () => {
+      console.log("here", cartProducts);
+    };
   return (
-    <View style={styles.containerCategoryMain}>
-          <View style={styles.main}>
+    <View style={styles.containerMain}>
+
+       <View style={styles.main}>
       <View style={styles.inputSection}>
       <TextInput
             placeholder='Search'
@@ -124,8 +110,9 @@ const ProductList = ({}) => {
       <TouchableOpacity style={styles.cart}>
         <Ionicons name="cart" size={40} color='white'>{cartCount}</Ionicons>
       </TouchableOpacity>
-    </View>
-      <View>
+       </View>
+
+       <View>
         <View style={styles.containerCategory}>
         <TouchableOpacity style={styles.buttonBlue} onPress={() => handleCategory('Food')}>
           <Text style={{ color: 'white', textAlign: 'center' }}>Food</Text>
@@ -138,42 +125,66 @@ const ProductList = ({}) => {
         <View style={styles.containerCategory} >
         <TouchableOpacity style={styles.buttonGreen} onPress={() => handleCategory('Others')}>
           <Text style={{ color: 'white', textAlign: 'center' }}>Others</Text>
-        </TouchableOpacity><TouchableOpacity style={styles.buttonPurple} onPress={() => handleCategoryAll('All')}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.buttonPurple} onPress={() => handleCategoryAll('All')}>
           <Text style={{ color: 'white', textAlign: 'center' }}>All</Text>
         </TouchableOpacity>
         </View>
         
-      </View>
-      
-   {/* Display selected category */}
-   {selectedCategory && (
-        <View>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>
+       </View>
+
+      <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>
             Products in {selectedCategory}
-          </Text>
-     <ScrollView style={styles.scrollView}>
-          {products.map((item) => (
-          <View key={item._id} style={styles.productContainer}>
-          <Image source={{ uri: item.productImage }} style={styles.image} />
-          <View>
-            <Text>{item.productName}</Text>
-            <Text>{item.productDescription}</Text>
-          </View>
-          <Text>Ksh: {item.productAmount}</Text>
-          <TouchableOpacity style={styles.buttonCart} onPress={handleCartPress}> 
-            <Text>Add To Cart</Text>
-          </TouchableOpacity>
-          </View>
-      ))}
-    </ScrollView>
-        </View>
-      )}
+      </Text>
+
+        {/* Display selected category */}
+
+      {selectedCategory && (
+
+          <ScrollView style={styles.containerFive}>
+
+              {products.map((item,) => (
+                <View key={item._id} style={styles.productContainer}>
+                <Image source={{ uri: item.productImage }} style={styles.image} />
+                <View>
+                  <Text>{item.productName}</Text>
+                  <Text>{item.productDescription}</Text>
+                </View>
+                <Text>Ksh: {item.productAmount}</Text>
+
+                { !showButtons ?(
+                  <TouchableOpacity style={styles.buttonCart} onPress={() => handleCartPress(item._id)}>
+                    <Text>Add To Cart</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.cartCountSection}>
+                    <TouchableOpacity onPress={() => handleDecreaseCartItem(item._id)}>
+                      <Ionicons name="remove" size={20} color="black" />
+                    </TouchableOpacity>
+                    <Text>{item.count}</Text>
+                    <TouchableOpacity onPress={() => handleIncreaseCartItem(item._id)}>
+                      <Ionicons name="add" size={20} color="black" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                </View>
+            ))}
+            
+          </ScrollView>
+       )}
 
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  containerMain:{
+    backgroundColor:'#ECF6FC',
+    alignItems:'center',
+    justifyContent:'space-evenly',
+
+  },
   main:{
     padding: 20,
     justifyContent:"space-around",
@@ -284,11 +295,12 @@ productItem: {
   alignItems: 'center',
   marginRight: 16,
 },
-scrollView:{
+containerFive:{
   width:'99%',
   marginTop:40,
   flexDirection:'column',
   alignContent:'center',
+  marginBottom:100,
 },
 productContainer:{
   width:'95%',

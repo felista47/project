@@ -15,7 +15,6 @@ const Deposit = () => {
 
   const handleContinue = () => {
     // Validate the entered values if needed
-    // For simplicity, we'll just show the confirmation without validation
     setShowConfirmation(true);
   };
  

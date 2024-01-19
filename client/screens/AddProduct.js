@@ -51,7 +51,7 @@ const AddProduct = () => {
 
   const handleAddProduct = async () => {
     try {
-      const response = await axios.post('http://172.16.87.225:5000/product', product, {
+      const response = await axios.post('http://192.168.100.45:5000/product', product, {
       
       });
   
