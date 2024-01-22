@@ -7,6 +7,8 @@ import HomeScreen from '../screens/HomeScreen';
 import Parent from '../components/Parent';
 import AddProduct from '../screens/AddProduct';
 import Cart from '../screens/Cart';
+import ProductList from '../screens/ProductList';
+import MakePayment from '../components/MakePayment';
 
 const Stack = createStackNavigator();
 
@@ -20,7 +22,10 @@ const MainNavigator = () => {
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false}} /> 
       <Stack.Screen name="Parent" component={Parent} options={{ headerShown: false}} />
       <Stack.Screen name="AddProduct" component={AddProduct} options={{ headerShown: false}} />
-      <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false}} />
+      <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false}} />  
+      <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false}} />
+      <Stack.Screen name="MakePayment" component={MakePayment} options={{ headerShown: false}} />
+
     </Stack.Navigator>
   );
 };

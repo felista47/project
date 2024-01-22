@@ -3,7 +3,7 @@ import axios from 'axios';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View, TouchableOpacity,ScrollView ,Image,TextInput} from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { addToCart, decreaseQuantity, increaseQuantity, removeFromCart } from "../reduxStore/reducers/CartReducer";
+import { addToCart} from "../reduxStore/reducers/CartReducer";
 import { useNavigation } from '@react-navigation/native';
 
  
@@ -13,6 +13,9 @@ const ProductList=({})=> {
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart.cart);
   const navigation = useNavigation();
+
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
 
   const navigateToCart = () => {
     navigation.navigate('Cart'); 
@@ -26,7 +29,7 @@ const ProductList=({})=> {
   }, []);
   const handleCategoryAll = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.5:5000/product/`, {
+      const response = await axios.get(`http://172.16.55.122:5000/product/`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -39,7 +42,7 @@ const ProductList=({})=> {
 
   const handleCategory = async (category) => {
       try {
-        const response = await axios.get(`http://172.16.55.5:5000/product/category/${category}`, {
+        const response = await axios.get(`http://172.16.55.122:5000/product/category/${category}`, {
           timeout: 5000,
         });
         const productData = response.data;
@@ -52,7 +55,7 @@ const ProductList=({})=> {
   
 const handleSearch = async () => {
         try {
-          const response = await axios.get(`http://172.16.55.5:5000/product/Search/search?query=${query}`, {
+          const response = await axios.get(`http://172.16.55.122:5000/product/Search/search?query=${query}`, {
             timeout: 5000,
           });
       
@@ -65,26 +68,8 @@ const handleSearch = async () => {
     };
   const handleCartPress = (item) => {
       dispatch(addToCart(item));
-      console.log("Cart Length:", cart);
-    };
-    
-  const removeItemFromCart = (item) => {
-      dispatch(removeFromCart(item));
-      console.log("Cart Length:", cart);
-
     };
 
-  const increaseQuantity = (item) => {
-      dispatch(incrementQuantity(item));
-    }
-
-  const decreaseQuantity = (item) => {
-      if(item.quantity == 1){
-        dispatch(removeFromCart(item));
-      }else{
-        dispatch(decrementQuantity(item));
-      }
-    }
  
   return (
     <View style={styles.containerMain}>
@@ -102,7 +87,8 @@ const handleSearch = async () => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.cart} onPress={()=>navigateToCart()}>
-              <Ionicons name="cart" size={40} color='white'></Ionicons>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginHorizontal: 10 }}>{totalItems}</Text>
+              <Ionicons name="cart" size={40} color='white'/>
             </TouchableOpacity>
       </View>
 
@@ -161,17 +147,17 @@ const handleSearch = async () => {
   );
 }
 const styles = StyleSheet.create({
-  containerMain:{
+containerMain:{
     backgroundColor:'#ECF6FC',
     alignItems:'center',
     justifyContent:'space-evenly',
 
-  },
-  search:{
-    padding: 20,
-    justifyContent:"space-around",
+},
+search:{
+    padding: 10,
+    justifyContent:'space-between',
     alignItems:"center",
-    flexDirection:"row"
+    flexDirection:"row",
 },
 inputSection:{
     width: '80%',
@@ -184,19 +170,20 @@ inputSection:{
 input:{
     height: 40,
     backgroundColor: "white",
-    width: "85%"
+    width: "70%"
 },
 cart:{
     backgroundColor:'#58C2FD',
     borderRadius: 999,
+    marginLeft:10
 },
-  containerCategory: {
+containerCategory: {
     width: '90%',
     marginTop: 15,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-  },
-  buttonBlue:{
+},
+buttonBlue:{
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#58C2FD',
@@ -210,7 +197,7 @@ cart:{
     },
     shadowRadius: 6,
 },
-  buttonRed:{
+buttonRed:{
       borderRadius: 20,
       padding: 10,
       backgroundColor: '#EE6B22',
@@ -223,8 +210,8 @@ cart:{
         height: 3,
       },
       shadowRadius: 6,
-  },
-  buttonGreen:{
+},
+buttonGreen:{
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#53AC65',
