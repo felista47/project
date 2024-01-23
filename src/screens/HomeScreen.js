@@ -3,11 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useRoute } from '@react-navigation/native';
 
 
 const HomeScreen = ({navigation}) => {
+  const route = useRoute();
+  const { accountType,email } = route.params || { accountType: 'default' };
   let userId = '659a6c6e53fb33f5d4909b8d';
-
+console.log('hello',accountType,email)
   //greetings function
   const [greeting, setGreeting] = useState('');
 
@@ -31,7 +34,7 @@ const HomeScreen = ({navigation}) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.122:5000/parent/${userId}`,{ timeout: 5000 });
+      const response = await axios.get(`http://172.16.55.30:5000/parent/${email}`,{ timeout: 5000 });
       const parentData = response.data;
       setParent(parentData); 
        } 

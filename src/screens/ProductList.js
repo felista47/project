@@ -29,7 +29,7 @@ const ProductList=({})=> {
   }, []);
   const handleCategoryAll = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.122:5000/product/`, {
+      const response = await axios.get(`http://172.16.55.30:5000/product/`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -42,7 +42,7 @@ const ProductList=({})=> {
 
   const handleCategory = async (category) => {
       try {
-        const response = await axios.get(`http://172.16.55.122:5000/product/category/${category}`, {
+        const response = await axios.get(`http://172.16.55.30:5000/product/category/${category}`, {
           timeout: 5000,
         });
         const productData = response.data;
@@ -55,7 +55,7 @@ const ProductList=({})=> {
   
 const handleSearch = async () => {
         try {
-          const response = await axios.get(`http://172.16.55.122:5000/product/Search/search?query=${query}`, {
+          const response = await axios.get(`http://172.16.55.30:5000/product/Search/search?query=${query}`, {
             timeout: 5000,
           });
       
