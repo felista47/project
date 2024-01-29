@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "client",
-    "slug": "client",
+    "slug": "pocket-money-management-system",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -18,9 +18,15 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.manoti.pocketmoneymanagementsystem"
+    },
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "c56676c2-302a-4a29-81e7-eacb57eca2ed"
       }
     },
-    "web": {
-    }
+    "owner": "manoti"
   }
 }
