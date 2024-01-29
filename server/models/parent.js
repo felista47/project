@@ -47,7 +47,8 @@ const parentSchema = new mongoose.Schema({
       },
       emailAddress: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
       }
     },
     homeAddress: {
