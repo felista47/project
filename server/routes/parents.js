@@ -15,22 +15,21 @@ router.get('/', async (req, res) => {
 });
 
 // get by id
-router.get('/:email', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const parent = await Parent.findOne({ 'personalInfo.contactInfo.emailAddress': req.params.email });
-
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+    const parent = await Parent.findById(req.params.id);
     if (!parent) {
       return res.status(404).json({ error: 'Parent not found' });
     }
-
     res.json(parent);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
-
-
 
 // add a new parent
 router.post('/', async (req, res) => {
