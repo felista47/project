@@ -4,10 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useRoute } from '@react-navigation/native';
+
 
 
 const ProfileScreen = () => {
-  let userId = '659a6d9253fb33f5d4909b90';
+  const route = useRoute();
+  const { accountType,email } = route.params || { accountType};
   const navigation = useNavigation();
 
   const navigateToParent = () => {
@@ -22,7 +25,7 @@ const ProfileScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.5:5000/parent/${userId}`);
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${email}`);
       const parentData = response.data;
 
       setParent(parentData);

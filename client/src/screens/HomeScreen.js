@@ -8,12 +8,8 @@ import { useRoute } from '@react-navigation/native';
 
 const HomeScreen = ({navigation}) => {
   const route = useRoute();
-  const { accountType,email } = route.params || { accountType: 'default' };
-  let userId = '659a6c6e53fb33f5d4909b8d';
-console.log('hello',accountType,email)
-  //greetings function
+  const { accountType, email: userEmail  } = route.params || { accountType, email: '' };
   const [greeting, setGreeting] = useState('');
-
   useEffect(() => {
     const currentHour = new Date().getHours();
 
@@ -34,9 +30,11 @@ console.log('hello',accountType,email)
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.30:5000/parent/${email}`,{ timeout: 5000 });
-      const parentData = response.data;
-      setParent(parentData); 
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`,{ timeout: 5000 });
+      console.log(userEmail)
+      const parentInfo = response.data;
+      console.log(parentInfo)
+      setParent(parentInfo); 
        } 
     catch (error) {
       console.error('Error fetching user data:', error);
@@ -53,7 +51,7 @@ console.log('hello',accountType,email)
   <View style={styles.containerOne}>
 <View style={styles.containerProfile}>
   {/* profile pic */}
-   <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile')}>
+   <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile',accountType,email)}>
      <Image style={styles.image} source={require('../../assets/avatar.png')} />
    </TouchableOpacity>
    {/* USER GREETINGS */}

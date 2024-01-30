@@ -1,49 +1,62 @@
 import { View, Text,TextInput,StyleSheet,TouchableHighlight,TouchableOpacity, Alert } from 'react-native'
 import React, {useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import axios from 'axios';
 import { useRoute } from '@react-navigation/native';
 
-const auth = getAuth();
 
 const LoginScreen = ({ navigation}) => {
-  const [email,setEmail] = useState('');
-  const [password,setPassword] = useState('');
-  const [validationMessage,setvalidationMessage] = useState('');
-
   const route = useRoute();
-const { accountType } = route.params || { accountType: 'default' };
-
-  async function login() {
-    if (email === '' || password === '') {
-      setvalidationMessage('required filled missing')
-      return;
-    }
-
+  const { accountType} = route.params || { accountType: 'default' };
+  const [user, setUser] = useState({
+    email:'',
+    password: '',
+   });
+   
+  const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth,email, password);
+      const response = await axios.post('https://pocket-money.up.railway.app/user/login',user);
+      const { email } = response.data;
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
-      console.log("hello",accountType)
       navigation.navigate(homeScreen,{accountType,email});
-      alert('Logged In Succesfully');
+
+        setUser({
+        email:'',
+        password: '',
+        
+      })
+      alert('logged in successfully!');
     } catch (error) {
-     setvalidationMessage(error.message);
+      console.error('Error logging in:', error);
+      alert('An error occured while logging in.');
     }
-  }
+  };
+  // const handleLogin = async () => {
+  //   try {
+  //     const response = await axios.post('https://pocket-money.up.railway.app/user/login', { email, password });
+  //     console.log(response.data)
+  //     // const { email: backendEmail, token } = response.data;
+  //     Alert.alert('Login Successful', `Welcome back, ${backendEmail}!`);
+  //   } catch (error) {
+  //     Alert.alert('Login Failed', error.response?.data?.message || 'An error occurred');
+  //   }
+  // };
+
+  
   return (
     <View style={styles.container} >
       <View style={styles.credentials}>
         <View style={styles.inputContainer}>
         <Ionicons name="mail" size={32} color="green" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="Email"  onChangeText={text =>setEmail(text)}/>
+      <TextInput style={styles.input} placeholder="Email" value={user.email} onChangeText={(text) =>setUser({ ...user,email:text })}/>
         </View>
       <View style={styles.inputContainer}>
       <Ionicons name="eye-off" size={32} color="#EE6B22" style={styles.icon} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry  onChangeText={text =>setPassword(text)}/>
+      <TextInput style={styles.input} placeholder="Password" value={user.password} onChangeText={(text) =>setUser({ ...user,password:text })}/>
       </View>
-      {<Text style={styles.error}>{validationMessage}</Text>}
+      {/* {<Text style={styles.error}>{errorMessage}</Text>} */}
       <Text style={styles.text}>Forgot password?</Text>
-      <TouchableOpacity style={styles.button} onPress={login}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
     </TouchableOpacity>
       </View>

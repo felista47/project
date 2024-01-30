@@ -36,7 +36,7 @@ let userId = '659a6d9253fb33f5d4909b90';
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.54.69:5000/parent/${userId}`);
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userId}`);
       const parentData = response.data;
 
       setParent(parentData);
@@ -53,7 +53,7 @@ let userId = '659a6d9253fb33f5d4909b90';
   const handleSavePress = async () => {
     try {
       // Make API request to update user data
-      await axios.patch(`http://172.16.55.0:5000/parent/${userId}`, editedData);
+      await axios.patch(`https://pocket-money.up.railway.app/parent/${userId}`, editedData);
 
       // Update local state with edited data
       setParent(editedData);

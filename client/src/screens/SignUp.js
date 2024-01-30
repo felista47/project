@@ -1,40 +1,54 @@
 import { View, Text,TextInput,StyleSheet,TouchableOpacity, KeyboardAvoidingView } from 'react-native'
 import React ,{useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import axios from 'axios';
 
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
-const auth = getAuth()
 
 const SignUpScreen  = ({ navigation }) => {
   
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [validationMessage, setValidationMessage] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [validationMessage, setValidationMessage] = useState('');
 
+  const validateAndSet = (value, setValue) => {
+    setValue(value);
+  };
 
-  let validateAndSet = (value,setValue) => {
-   setValue(value)
-}
-function checkPassword(firstpassword,secondpassword) {
-  if(firstpassword !== secondpassword){
-    setValidationMessage('Password do not match') 
-  }
-  else setValidationMessage('')
-}
-  async function createAccount() {
-    email === '' || password === '' 
-    ? setValidationMessage('required filled missing')
-    : ''
+  const checkPassword = (firstPassword, secondPassword) => {
+    if (firstPassword !== secondPassword) {
+      setValidationMessage('Passwords do not match');
+    } else {
+      setValidationMessage('');
+    }
+  };
+
+  const createAccount = async () => {
+    if (email === '' || password === '' || confirmPassword === '') {
+      setValidationMessage('Required field(s) missing');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setValidationMessage('Passwords do not match');
+      return;
+    }
+
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert('User registered succesfully');
+      const response = await axios.post('https://pocket-money.up.railway.app/user/signup', {
+        email,
+        password,
+      });
+      const { email: backendEmail, token } = response.data;
+      alert('User registered successfully');
       navigation.navigate('SignIn');
     } catch (error) {
-      setValidationMessage(error.message);
+      setValidationMessage(error.response?.data?.error || 'An error occurred');
     }
-  }
+  };
+
+
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.credentials}>
@@ -42,10 +56,6 @@ function checkPassword(firstpassword,secondpassword) {
          <Ionicons name="mail" size={32} color="#EE6B22" style={styles.icon}/>
          <TextInput style={styles.input} value={email}
           onChangeText={(text) => setEmail(text)} placeholder="Email"/>
-        </View>
-        <View style={styles.inputContainer}>
-        <Ionicons name="person-circle" size={32} color="#58C2FD" style={styles.icon}/>
-        <TextInput style={styles.input} placeholder="user"/>
         </View>
         <View style={styles.inputContainer}>
         <Ionicons name="eye-off" size={32} color="#7282BC" style={styles.icon}/>
