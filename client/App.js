@@ -3,7 +3,6 @@ import { store } from './src/reduxStore/store';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import MainNavigator from './src/navigation'
-import { firebase } from './firebase';
 
 
 export default function App() {
