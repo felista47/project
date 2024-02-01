@@ -8,8 +8,9 @@ import { useRoute } from '@react-navigation/native';
 
 const HomeScreen = ({navigation}) => {
   const route = useRoute();
-  const { accountType, email: userEmail  } = route.params || { accountType, email: '' };
+  const { userEmail,accountType } = route.params;
   const [greeting, setGreeting] = useState('');
+
   useEffect(() => {
     const currentHour = new Date().getHours();
 
@@ -26,15 +27,14 @@ const HomeScreen = ({navigation}) => {
   const [parent, setParent] = useState(null);
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accountType, userEmail]);
+  
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`,{ timeout: 5000 });
-      console.log(userEmail)
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
       const parentInfo = response.data;
-      console.log(parentInfo)
-      setParent(parentInfo); 
+      setParent(parentInfo)
        } 
     catch (error) {
       console.error('Error fetching user data:', error);
@@ -44,27 +44,33 @@ const HomeScreen = ({navigation}) => {
   if (!parent) {
     return <Text>Loading...</Text>;
   }
+  const navigateToProfile = () => {
+    navigation.navigate('Profile',accountType,userEmail); 
+    console.log('profilefrom Home',accountType,userEmail)
+  };
 
   return (
 <View style={styles.mainContainer}>
       {/* top part contains user image links to account, notification and spending chart */}
   <View style={styles.containerOne}>
-<View style={styles.containerProfile}>
-  {/* profile pic */}
-   <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile',accountType,email)}>
-     <Image style={styles.image} source={require('../../assets/avatar.png')} />
-   </TouchableOpacity>
-   {/* USER GREETINGS */}
-   <View style={styles.userGreetings}>
-      <Text style={styles.greetingText}>{greeting},</Text>
-      <Text style={styles.text}>{parent.personalInfo.name}</Text>
-   </View>
-</View>
-<View style={styles.containerIcons}>
-  <FontAwesomeIcon icon={ faBell } />
-  <FontAwesomeIcon icon={ faChartPie } />
-</View>
+  <View style={styles.containerProfile}>
+      {/* profile pic */}
+      <TouchableOpacity style={styles.avatar} onPress={navigateToProfile}>
+        <Image style={styles.image} source={require('../../assets/avatar.png')} />
+      </TouchableOpacity>
+
+      {/* USER GREETINGS */}
+        <View style={styles.userGreetings}>
+            <Text style={styles.greetingText}>{greeting},</Text>
+            <Text style={styles.text}>{userEmail}</Text>
+        </View>
   </View>
+    <View style={styles.containerIcons}>
+      <FontAwesomeIcon icon={ faBell } />
+      <FontAwesomeIcon icon={ faChartPie } />
+    </View>
+  </View>
+
       {/* balance of user account */}
   <View style={styles.containerTwo}>
   {parent.children.map((child, index) => (
@@ -74,6 +80,7 @@ const HomeScreen = ({navigation}) => {
         </View>
       ))}
   </View>
+
   {/* withdraw and deposit options */}
   <View style={styles.containerThree}>
 <TouchableOpacity style={styles.ButtonBlue} onPress={()=>navigation.navigate('Deposit')}>
@@ -83,11 +90,13 @@ const HomeScreen = ({navigation}) => {
 <Text style={styles.buttonText}>Withdraw</Text>
 </TouchableOpacity>
   </View>
+
   {/* Transaction statement */}
   <View style={styles.containerFour}>
     <Text style={styles.containerFourT1}>TRANSACTION STATEMENT</Text>
     <Text style={styles.containerFourT2}>See all</Text>
   </View>
+
   {/* Transaction statement item */}
   <ScrollView style={styles.containerFive}>
     <View style={styles.transactionItem}>
@@ -169,7 +178,7 @@ const HomeScreen = ({navigation}) => {
       </View>
     </View>
   </ScrollView>
-    </View>
+</View>
   );
 };
 

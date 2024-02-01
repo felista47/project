@@ -10,23 +10,28 @@ import { useRoute } from '@react-navigation/native';
 
 const ProfileScreen = () => {
   const route = useRoute();
-  const { accountType,email } = route.params || { accountType};
+  const { accountType,userEmail } = route.params;
   const navigation = useNavigation();
-
   const navigateToParent = () => {
-    navigation.navigate('Parent'); 
+    navigation.navigate('Parent',accountType,userEmail); 
+    console.log('profile',accountType,userEmail)
+
   };
 
   const [parent, setParent] = useState(null);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accountType, userEmail]);
+  
 
   const fetchData = async () => {
+    console.log('profileBefore',accountType,userEmail)
+
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${email}`);
+      const response = await axios.get(`https://pocket-money.up.railway.app/${accountType}/${userEmail}`);
       const parentData = response.data;
+      console.log('profileAfter',accountType,userEmail)
 
       setParent(parentData);
     } catch (error) {

@@ -2,77 +2,61 @@ import { View, Text,TextInput,StyleSheet,TouchableOpacity, KeyboardAvoidingView 
 import React ,{useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
+import { useRoute } from '@react-navigation/native';
 
 
 
 const SignUpScreen  = ({ navigation }) => {
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const route = useRoute();
+  const { accountType } = route.params || { accountType: 'default' };
   const [validationMessage, setValidationMessage] = useState('');
+  const [user, setUser] = useState({
+    email: '',
+    password: '',
+  });
 
-  const validateAndSet = (value, setValue) => {
-    setValue(value);
-  };
 
-  const checkPassword = (firstPassword, secondPassword) => {
-    if (firstPassword !== secondPassword) {
-      setValidationMessage('Passwords do not match');
-    } else {
-      setValidationMessage('');
-    }
-  };
 
   const createAccount = async () => {
-    if (email === '' || password === '' || confirmPassword === '') {
-      setValidationMessage('Required field(s) missing');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setValidationMessage('Passwords do not match');
-      return;
-    }
-
-    try {
-      const response = await axios.post('https://pocket-money.up.railway.app/user/signup', {
-        email,
-        password,
-      });
-      const { email: backendEmail, token } = response.data;
-      alert('User registered successfully');
-      navigation.navigate('SignIn');
-    } catch (error) {
-      setValidationMessage(error.response?.data?.error || 'An error occurred');
-    }
+      try {
+        const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`, user);
+        setUser({
+          email: '',
+          password: '',
+        });
+        alert('Registered  successfully!');
+        navigation.navigate('SignIn',{accountType});
+        console.log('login',accountType)
+      } catch (error) {
+        console.error('Error sign up in:', error);
+        alert('An error occurred while signing up.');
+      }
+        
+    
   };
 
 
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.credentials}>
+
         <View style={styles.inputContainer}>
          <Ionicons name="mail" size={32} color="#EE6B22" style={styles.icon}/>
-         <TextInput style={styles.input} value={email}
-          onChangeText={(text) => setEmail(text)} placeholder="Email"/>
+         <TextInput style={styles.input} value={user.email}
+          onChangeText={(text) =>setUser({ ...user,email:text })} placeholder="Email"/>
         </View>
+
         <View style={styles.inputContainer}>
-        <Ionicons name="eye-off" size={32} color="#7282BC" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="password" value={password}
-          onChangeText={(value) => validateAndSet(value, setPassword)} secureTextEntry/>
-        </View>
-      <View style={styles.inputContainer}>
-      <Ionicons name="eye-off" size={32} color="green" style={styles.icon} />
-      <TextInput style={styles.input} value={confirmPassword}
-          onChangeText={(value) => validateAndSet(value,setConfirmPassword)}
-          secureTextEntry placeholder="confirm Password" onBlur={()=>checkPassword(password,confirmPassword)}/>
+      <Ionicons name="eye-off" size={32} color="#EE6B22" style={styles.icon} />
+      <TextInput style={styles.input} placeholder="Password" value={user.password} onChangeText={(text) =>setUser({ ...user,password:text })}/>
       </View>
+
       {<Text style={styles.error}>{validationMessage}</Text>}
       <Text style={styles.text}>Forgot password?</Text>
+
       <TouchableOpacity style={styles.button} onPress={createAccount}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Sign Up</Text>
-    </TouchableOpacity>
+      </TouchableOpacity>
       </View>
        <View>
        <Text style={styles.dontHave}>Already have an account?</Text>

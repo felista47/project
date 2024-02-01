@@ -7,41 +7,32 @@ import { useRoute } from '@react-navigation/native';
 
 const LoginScreen = ({ navigation}) => {
   const route = useRoute();
-  const { accountType} = route.params || { accountType: 'default' };
+  const { accountType } = route.params || { accountType: 'default' };
   const [user, setUser] = useState({
-    email:'',
+    email: '',
     password: '',
-   });
-   
+  });
+  
   const handleLogin = async () => {
     try {
-      const response = await axios.post('https://pocket-money.up.railway.app/user/login',user);
-      const { email } = response.data;
-      const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
-      navigation.navigate(homeScreen,{accountType,email});
-
-        setUser({
-        email:'',
+      const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
+      userEmail=response.data.email
+      setUser({
+        email: '',
         password: '',
-        
-      })
-      alert('logged in successfully!');
+      });
+      alert('Logged in successfully!');
+      const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
+      navigation.navigate(homeScreen,{ accountType,userEmail});
+      console.log('login',accountType,userEmail)
     } catch (error) {
       console.error('Error logging in:', error);
-      alert('An error occured while logging in.');
+      alert('An error occurred while logging in.');
     }
+      
   };
-  // const handleLogin = async () => {
-  //   try {
-  //     const response = await axios.post('https://pocket-money.up.railway.app/user/login', { email, password });
-  //     console.log(response.data)
-  //     // const { email: backendEmail, token } = response.data;
-  //     Alert.alert('Login Successful', `Welcome back, ${backendEmail}!`);
-  //   } catch (error) {
-  //     Alert.alert('Login Failed', error.response?.data?.message || 'An error occurred');
-  //   }
-  // };
-
+  
+ 
   
   return (
     <View style={styles.container} >
@@ -64,7 +55,7 @@ const LoginScreen = ({ navigation}) => {
        <View>
        <Text style={styles.dontHave}>Don't have an account?</Text>
 
-       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('SignUp')}>
+       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('SignUp',{ accountType})}>
       <Text style={{ color: 'white', textAlign: 'center' }}>SignUp</Text>
     </TouchableOpacity>
     </View>

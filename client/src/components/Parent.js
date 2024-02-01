@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useRoute } from '@react-navigation/native';
 
 
 const Parent = () => {
-let userId = '659a6d9253fb33f5d4909b90';
-
+  const route = useRoute();
+  const { accountType,userEmail } = route.params;
+  console.log('parentInfo',accountType,userEmail)
   const [parent, setParent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
@@ -36,7 +38,7 @@ let userId = '659a6d9253fb33f5d4909b90';
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userId}`);
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`);
       const parentData = response.data;
 
       setParent(parentData);
@@ -53,7 +55,7 @@ let userId = '659a6d9253fb33f5d4909b90';
   const handleSavePress = async () => {
     try {
       // Make API request to update user data
-      await axios.patch(`https://pocket-money.up.railway.app/parent/${userId}`, editedData);
+      await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, editedData);
 
       // Update local state with edited data
       setParent(editedData);
