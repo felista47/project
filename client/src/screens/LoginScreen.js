@@ -2,36 +2,58 @@ import { View, Text,TextInput,StyleSheet,TouchableHighlight,TouchableOpacity, Al
 import React, {useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LoginScreen = ({ navigation}) => {
-  const route = useRoute();
-  const { accountType } = route.params || { accountType: 'default' };
+  const { accountType,setAuthData} = useAuth();
   const [user, setUser] = useState({
     email: '',
     password: '',
   });
-  
+
   const handleLogin = async () => {
     try {
+      console.log(user,accountType);
       const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
-      userEmail=response.data.email
+      const userEmailResponse = response.data.email;
+      const token = response.data.token;
+      await AsyncStorage.setItem('authToken', token);
       setUser({
         email: '',
         password: '',
       });
+      setAuthData(accountType, userEmailResponse); // Update the AuthContext values
+
       alert('Logged in successfully!');
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
-      navigation.navigate(homeScreen,{ accountType,userEmail});
-      console.log('login',accountType,userEmail)
+      navigation.navigate(homeScreen);
+      console.log('login', accountType, userEmailResponse);
     } catch (error) {
       console.error('Error logging in:', error);
-      alert('An error occurred while logging in.');
+
+      // Display user-friendly error messages based on the type of error
+      if (error.response) {
+        // The request was made, but the server responded with a status code that falls out of the range of 2xx
+        console.log('Server responded with an error status:', error.response.status);
+
+        if (error.response.status === 401) {
+          alert('Invalid email or password. Please try again.');
+        } else {
+          alert('An error occurred while logging in. Please try again later.');
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.log('No response received from the server.');
+        alert('No response received from the server. Please try again later.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error setting up the request:', error.message);
+        alert('An unexpected error occurred. Please try again later.');
+      }
     }
-      
   };
-  
  
   
   return (
@@ -55,7 +77,7 @@ const LoginScreen = ({ navigation}) => {
        <View>
        <Text style={styles.dontHave}>Don't have an account?</Text>
 
-       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('SignUp',{ accountType})}>
+       <TouchableOpacity style={styles.buttonOne} onPress={()=>navigation.navigate('SignUp')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>SignUp</Text>
     </TouchableOpacity>
     </View>

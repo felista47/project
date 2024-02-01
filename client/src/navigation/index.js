@@ -12,6 +12,7 @@ import MakePayment from '../components/MakePayment';
 import LoginScreen from '../screens/LoginScreen';
 import VendorHomeScreen from '../screens/VendorHomeScreen';
 import SignUp from '../screens/SignUp';
+import Child from '../components/Child';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ const MainNavigator = () => {
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false}} /> 
       <Stack.Screen name="VendorHomeScreen" component={VendorHomeScreen} options={{ headerShown: false}} /> 
       <Stack.Screen name="Parent" component={Parent} options={{ headerShown: false}} />
+      <Stack.Screen name="Child" component={Child} options={{ headerShown: false}} />
       <Stack.Screen name='SignIn' component={LoginScreen} options={{headerShown:false}}/>
       <Stack.Screen name='SignUp' component={SignUp} options={{headerShown:false}}/>
       <Stack.Screen name="AddProduct" component={AddProduct} options={{ headerShown: false}} />

@@ -4,21 +4,26 @@ import { useNavigation } from '@react-navigation/native';
 import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'
 
 
 
 const ProfileScreen = () => {
-  const route = useRoute();
-  const { accountType,userEmail } = route.params;
+  const { accountType,userEmail} = useAuth();
   const navigation = useNavigation();
+  const [parent, setParent] = useState(null);
+
   const navigateToParent = () => {
-    navigation.navigate('Parent',accountType,userEmail); 
+    navigation.navigate('Parent'); 
+    console.log('profile',accountType,userEmail)
+
+  };
+  const navigateToChild = () => {
+    navigation.navigate('Child'); 
     console.log('profile',accountType,userEmail)
 
   };
 
-  const [parent, setParent] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -31,7 +36,7 @@ const ProfileScreen = () => {
     try {
       const response = await axios.get(`https://pocket-money.up.railway.app/${accountType}/${userEmail}`);
       const parentData = response.data;
-      console.log('profileAfter',accountType,userEmail)
+      console.log('profileAfter',accountType,userEmail,parentData)
 
       setParent(parentData);
     } catch (error) {
@@ -55,8 +60,8 @@ const ProfileScreen = () => {
           </TouchableOpacity>
           {/* USER GREETINGS */}
    <View style={styles.userMinInfo}>
-      <Text style={styles.text}>{parent.personalInfo.name}</Text>
-      <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
+      <Text style={styles.text}>{parent.userAccountInfo.email}</Text>
+      <Text>{parent.personalInfo.phoneNumber}</Text>
    </View>
 
       </View>
@@ -90,7 +95,7 @@ const ProfileScreen = () => {
       </View>
     </TouchableOpacity>
     
-    <TouchableOpacity style={styles.accItem}>
+    <TouchableOpacity style={styles.accItem}onPress={navigateToChild}>
       <View  style={styles.accItemIcon} >
         <FontAwesomeIcon icon={ faChildren }/>
       </View>

@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'
 
 
 const HomeScreen = ({navigation}) => {
-  const route = useRoute();
-  const { userEmail,accountType } = route.params;
+
+  const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const HomeScreen = ({navigation}) => {
     return <Text>Loading...</Text>;
   }
   const navigateToProfile = () => {
-    navigation.navigate('Profile',accountType,userEmail); 
+    navigation.navigate('Profile'); 
     console.log('profilefrom Home',accountType,userEmail)
   };
 

@@ -1,25 +1,60 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native'; 
+import { useAuth } from '../context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 
 const WelcomeScreen = () => {
   const navigation = useNavigation(); 
-  const handleAccountSelection = (accountType) => {
+  const { accountType, setAuthData } = useAuth();
 
-    if (accountType === 'parent'){ 
-      navigation.navigate('SignUp',{ accountType });
-    } else {
-      // If the user is not logged in,
-      navigation.navigate('SignIn',{ accountType });
-    }
-    if (accountType === 'Vendor'){ 
-      navigation.navigate('SignUp',{ accountType });
-    } else {
-      // If the user is not logged in,
-      navigation.navigate('SignIn',{ accountType });
+  const checkUserSignInStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+  
+      if (!token) {
+        console.log('User not signed in');
+        return null;
+      }
+      const response = await axios.get('https://pocket-money.up.railway.app/parent/check', {
+        headers: {
+          'x-auth-token': token,
+        },
+      });
+        return response.data;
+    } catch (error) {
+      // Handle error, e.g., user is not signed in
+      console.error('Error checking user sign-in status:', error);
+      return null;
     }
   };
+
+  const handleAccountSelection = async (type) => {
+  try {
+    const isUserSignedIn = await checkUserSignInStatus();
+    if (isUserSignedIn) {
+      const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
+      navigation.navigate(homeScreen);
+    }else {
+   
+      if (type === 'parent') {
+        navigation.navigate('SignIn');
+        setAuthData('parent'); // Match the case
+      }
+      else if (type === 'vendor') {
+        navigation.navigate('SignIn');
+        setAuthData('vendor');
+      }
+   }
+   console.log('acountType',accountType )
+  }
+  catch (error) {
+    console.error('Error checking user sign-in status:', error);
+    navigation.navigate('SignIn'); // Replace with your default screen
+  }
+};
 
   return (
     <View style={styles.container}>

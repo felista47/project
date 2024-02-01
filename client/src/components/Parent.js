@@ -3,26 +3,25 @@ import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'
 
 
 const Parent = () => {
-  const route = useRoute();
-  const { accountType,userEmail } = route.params;
+  const { accountType,userEmail} = useAuth();
   console.log('parentInfo',accountType,userEmail)
   const [parent, setParent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
     personalInfo: {
       name: '',
-      contactInfo: {
-        phoneNumber: '',
-        emailAddress: '',
-      },
+      phoneNumber: '',
       homeAddress: '',
     },
     parentalDetails: {
       parentRelationship: '',
+    },
+    userAccountInfo:{
+      email: ''
     },
     children: [],
     financialInformation: {
@@ -91,11 +90,11 @@ const Parent = () => {
       </View>
       <View style={styles.accItem}>
         <Text>Phone Number:</Text>
-        <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
+        <Text>{parent.personalInfo.phoneNumber}</Text>
       </View>
       <View style={styles.accItem}>
         <Text>Email Address: </Text>
-        <Text>{parent.personalInfo.contactInfo.emailAddress}</Text>
+        <Text>{parent.userAccountInfo.email}</Text>
       </View>
       <View style={styles.accItem}>   
         <Text>Home Address:</Text>
@@ -112,13 +111,13 @@ const Parent = () => {
           />
           <TextInput
             placeholder="Phone Number"
-            value={editedData.personalInfo.contactInfo.phoneNumber}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, phoneNumber: text } } })}
+            value={editedData.personalInfo.phoneNumber}
+            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, phoneNumber: text }  })}
           />
           <TextInput
             placeholder="Email Address"
-            value={editedData.personalInfo.contactInfo.emailAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, emailAddress: text } } })}
+            value={editedData.userAccountInfo.email}
+            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.userAccountInfo, email: text } })}
           />
           <TextInput
             placeholder="Home Address"
