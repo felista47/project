@@ -31,7 +31,7 @@ const VendorHomeScreen = ({navigation}) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/vendor/${userId}`,{ timeout: 5000 });
+      const response = await axios.get(`https://pocket-money.up.railway.app/vendor/${userEmail}`,{ timeout: 5000 });
       const vendorData = response.data;
       setVendor(vendorData); 
        } 

@@ -2,30 +2,54 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
 import { useNavigation } from '@react-navigation/native';
-
-
+import { useAuth } from '../context/AuthContext'
+import axios from 'axios';
 
 
 const Deposit = () => {
-
-  const navigation = useNavigation();
   const [amount, setAmount] = useState('');
   const [operator, setOperator] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
-
+  const {userEmail} = useAuth();
+  console.log('depo',userEmail)
+  const [editedData, setEditedData] = useState({
+    personalInfo: {
+      name: '',
+      phoneNumber: '',
+      homeAddress: '',
+    },
+    parentalDetails: {
+      parentRelationship: '',
+    },
+    userAccountInfo:{
+      email: ''
+    },
+    children: [],
+    financialInformation: {
+      allowanceBalAmount: 0,
+      allowanceAmount: 0,
+      allowanceFrequency: 'Weekly',
+    },
+  });
   const handleContinue = () => {
     // Validate the entered values if needed
     setShowConfirmation(true);
   };
- 
-  const handleConfirmDeposit = () => {
-    // Implement the logic for confirming the deposit
-    console.log('Deposit confirmed:', { amount, operator });
-    // Reset the values and hide the confirmation view
-    setShowConfirmation(false);
-    navigation.navigate('Home'); 
 
+  const handleConfirmDeposit = async () => {
+    try {
+      // Make API request to update user data
+      const response = await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, {
+        financialInformation: {
+          allowanceBalAmount: editedData.financialInformation.allowanceBalAmount + parseFloat(amount),
+        },
+      });
 
+      // Update local state with edited data
+      setParent(response.data);
+    } catch (error) {
+      console.error('Error updating user data:', error);
+    }
   };
 
   return (
@@ -34,11 +58,20 @@ const Deposit = () => {
         <View style={styles.DepContainerOne}>
           <Text style={styles.DepContainerOneText}>Deposit Cash</Text>
           <TextInput
-            style={styles.input}
-            placeholder="KSH."
-            value={amount}
-            onChangeText={(text) => setAmount(text)}
-          />
+  style={styles.input}
+  placeholder="KSH."
+  value={amount}
+  onChangeText={(text) =>
+    setEditedData({
+      ...editedData,
+      financialInformation: {
+        ...editedData.financialInformation,
+        allowanceBalAmount: parseFloat(text),
+      },
+    })
+  }
+/>
+
           <Picker
             selectedValue={operator}
             onValueChange={(itemValue) => setOperator(itemValue)}
@@ -59,19 +92,26 @@ const Deposit = () => {
           <View style={styles.confirmDep}>
             <Text style={styles.confirmDepText}>Deposit Cash</Text>
             <View style={styles.confirmDepCard}>
-              <View><Text>SOURCE OF FUNDS</Text><Text>{operator}</Text></View>
-              <View><Text>AMOUNT</Text><Text>{amount}</Text></View>
+              <View>
+                <Text>SOURCE OF FUNDS</Text>
+                <Text>{operator}</Text>
+              </View>
+              <View>
+                <Text>AMOUNT</Text>
+                <Text>{amount}</Text>
+              </View>
             </View>
           </View>
 
           <TouchableOpacity style={styles.ButtonBlue} onPress={handleConfirmDeposit}>
-              <Text>CONFIRM DEPOSIT</Text>
+            <Text>CONFIRM DEPOSIT</Text>
           </TouchableOpacity>
         </View>
       )}
     </View>
   );
 };
+
 
 export default Deposit;
 

@@ -31,7 +31,7 @@ const decreaseQuantity = (item) => {
     }
   }
   const navigateToProducts= () => {
-    navigation.navigate('VendorHome'); 
+    navigation.navigate('VendorHomeScreen'); 
   };
   const navigateToPay= () => {
     navigation.navigate('MakePayment'); 
