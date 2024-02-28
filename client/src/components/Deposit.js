@@ -7,28 +7,25 @@ import axios from 'axios';
 
 
 const Deposit = () => {
-  const [amount, setAmount] = useState('');
+  const [parent, setParent] = useState('');
   const [number, setNumber] = useState("");
   const [operator, setOperator] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const {userEmail} = useAuth();
   const [editedData, setEditedData] = useState({
-    children: [],
     financialInformation: {
-      allowanceBalAmount: amount,
-      allowanceAmount: 0,
-      allowanceFrequency: 'Weekly',
+      allowanceBalAmount: '',
     },
   });
 
   const handleContinue = () => {
-    // Validate the entered values if needed
+    setParent(editedData);
     setShowConfirmation(true);
   };
-  const navigateToHome = () => {
-    navigation.navigate('HomeScreen'); 
-    console.log('profilefrom Home',accountType,userEmail)
-  };
+  // const navigateToHome = () => {
+  //   navigation.navigate('HomeScreen'); 
+  //   console.log('profilefrom Home',accountType,userEmail)
+  // };
   // const handleConfirmDeposit = async () => {
   //   try {
   //     console.log(number)
@@ -60,16 +57,19 @@ const Deposit = () => {
 
   //   }
   // };
- const updateBalance =async()=>{
+
+  const handleConfirmDeposit = async () => {
     try {
       // Make API request to update user data
-      const response = await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`,editedData);
+      await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, editedData);
+
+      // Update local state with edited data
+      setParent(editedData);
+      alert('deposit made succesfully')
     } catch (error) {
       console.error('Error updating user data:', error);
     }
-  
-
- }
+  };
   
 
   return (
@@ -77,7 +77,11 @@ const Deposit = () => {
       {!showConfirmation ? ( // Display deposit details form
         <View style={styles.DepContainerOne}>
           <Text style={styles.DepContainerOneText}>Deposit Cash</Text>
-          <TextInput style={styles.input} placeholder="KSH." value={amount}onChangeText={(text) => setAmount(text)}/>
+          <TextInput style={styles.input}
+           placeholder="KSH."
+           value={editedData.financialInformation.allowanceBalAmount}
+           onChangeText={(text) => setEditedData({ ...editedData, financialInformation: { ...editedData.financialInformation, allowanceBalAmount: text } })}
+         />
           <TextInput style={styles.input} placeholder="07232" value={number}onChangeText={(text) => setNumber(text)}/>
         <Picker
             selectedValue={operator}
@@ -109,7 +113,7 @@ const Deposit = () => {
               </View>
               <View>
                 <Text>AMOUNT</Text>
-                <Text>{amount}</Text>
+                <Text>{parent.financialInformation.allowanceBalAmount}</Text>
               </View>
             </View>
           </View>

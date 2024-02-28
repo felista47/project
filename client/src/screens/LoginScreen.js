@@ -58,6 +58,7 @@ const LoginScreen = ({ navigation}) => {
   
   return (
     <View style={styles.container} >
+      <Text>You are Signing In as a {accountType}</Text>
       <View style={styles.credentials}>
         <View style={styles.inputContainer}>
         <Ionicons name="mail" size={32} color="green" style={styles.icon}/>

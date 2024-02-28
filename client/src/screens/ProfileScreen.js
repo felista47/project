@@ -24,6 +24,11 @@ const ProfileScreen = () => {
     console.log('profile',accountType,userEmail)
 
   };
+  const navigateToFinance = () => {
+    navigation.navigate('Finance'); 
+
+  };
+
   useEffect(() => {
     fetchData();
   }, [accountType, userEmail]);
@@ -34,7 +39,6 @@ const ProfileScreen = () => {
     try {
       const response = await axios.get(`https://pocket-money.up.railway.app/${accountType}/${userEmail}`);
       const parentData = response.data;
-      console.log('profileAfter fetch',accountType,userEmail,parentData)
 
       setParent(parentData);
     } catch (error) {
@@ -118,7 +122,15 @@ const ProfileScreen = () => {
         <Text>student details,edit details</Text>
       </View> 
     </TouchableOpacity>
-
+    <TouchableOpacity style={styles.accItem} onPress={navigateToFinance}>
+      <View  style={styles.accItemIcon} >
+        <FontAwesomeIcon icon={ faUser }/>
+      </View>
+      <View>
+        <Text>financial Information</Text>
+        <Text>Allowance details, set allowance limit</Text>
+      </View>
+    </TouchableOpacity>
     <TouchableOpacity style={styles.accItem}>
       <View  style={styles.accItemIcon} >
       <FontAwesomeIcon icon={ faBell }/>

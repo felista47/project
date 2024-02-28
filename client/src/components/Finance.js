@@ -11,18 +11,9 @@ const Parent = () => {
   const [parent, setParent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
-    personalInfo: {
-      name: '',
-      phoneNumber: '',
-      homeAddress: '',
+    financialInformation: {
+    allowanceFrequency:""
     },
-    parentalDetails: {
-      parentRelationship: '',
-    },
-    userAccountInfo:{
-      email: ''
-    },
- 
   });
 
   useEffect(() => {
@@ -75,63 +66,30 @@ const Parent = () => {
   return (
     <ScrollView style={styles.parentContainer}>
       <View style={styles.accItem}>
-        <Text>ID:</Text>
-        <Text> {parent.personalInfo.id}</Text>
+        <Text>{parent.financialInformation.allowanceFrequency} Allowance Amount</Text>
+        <Text> {parent.financialInformation.allowanceAmount}</Text>
       </View>
       <View style={styles.accItem}>
-        <Text>Name: </Text>
-        <Text>{parent.personalInfo.name}</Text>
+        <Text>Allowance Balance Amount </Text>
+        <Text> {parent.financialInformation.allowanceBalAmount}</Text>
       </View>
       <View style={styles.accItem}>
-        <Text>Phone Number:</Text>
-        <Text>{parent.personalInfo.phoneNumber}</Text>
+        <Text>Allowance Frequency:</Text>
+        <Text> {parent.financialInformation.allowanceFrequency}</Text>
       </View>
-      <View style={styles.accItem}>
-        <Text>Parental Relationship:</Text>
-        <Text>{parent.parentalDetails.parentRelationship}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Email Address: </Text>
-        <Text>{parent.userAccountInfo.email}</Text>
-      </View>
-      <View style={styles.accItem}>   
-        <Text>Home Address:</Text>
-        <Text>{parent.personalInfo.homeAddress}</Text>
-      </View>
-
+  
       {isEditing ? (
         <View>
-          {/* Form for editing parent data */}
+          {/* Form for editing finance data */}
           <TextInput
             placeholder="ID"
-            value={editedData.personalInfo.id}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, id: text } })}
+            value={editedData.financialInformation.allowanceFrequency}
+            onChangeText={(text) => setEditedData({ ...editedData, financialInformation: { ...editedData.financialInformation, allowanceFrequency: text } })}
           />
-          <TextInput
-            placeholder="Name"
-            value={editedData.personalInfo.name}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, name: text } })}
-          />
-             <TextInput
-            placeholder="Parental Relationship"
-            value={editedData.parentalDetails.parentRelationship}
-            onChangeText={(text) => setEditedData({ ...editedData, parentalDetails: { ...editedData.parentalDetails, parentRelationship: text } })}
-          />
-          <TextInput
-            placeholder="Phone Number"
-            value={editedData.personalInfo.phoneNumber}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, phoneNumber: text }  })}
-          />
-          <TextInput
-            placeholder="Email Address"
-            value={editedData.userAccountInfo.email}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.userAccountInfo, email: text } })}
-          />
-          <TextInput
-            placeholder="Home Address"
-            value={editedData.personalInfo.homeAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, homeAddress: text } })}
-          />
+
+  
+   
+       
 
 
           <TouchableOpacity onPress={handleSavePress}>
@@ -146,6 +104,7 @@ const Parent = () => {
           <Text>Edit</Text>
         </TouchableOpacity>
       )}
+  
     </ScrollView>
   );
 };

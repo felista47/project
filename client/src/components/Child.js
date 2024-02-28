@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext'
 
 const Child = () => {
   const { accountType,userEmail} = useAuth();
-  console.log('childInfo',accountType,userEmail)
 
   const [parent, setParent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -57,6 +56,25 @@ const Child = () => {
   };
 
 
+    const deleteChild = async () => {
+      try {
+        // Send a DELETE request to the server
+        const response = await axios.delete(`YOUR_SERVER_URL/${parentEmail}/children/${childId}`);
+  
+        // Check the response status
+        if (response.status === 200) {
+          console.log('Child deleted successfully');
+          // Handle any other actions after successful deletion
+        } else {
+          console.log('Error deleting child:', response.data.error);
+          // Handle error scenarios
+        }
+      } catch (error) {
+        console.error('Error deleting child:', error.message);
+        // Handle network or other errors
+      }
+    };
+  
   const handleCancelPress = () => {
     // Reset editedData to current parent data
     setEditedData(parent);
@@ -78,9 +96,9 @@ const Child = () => {
           <Text style={styles.accItem} >Child {index + 1}</Text>
           <Text style={styles.accItem}>Child Full Name: {child.childFullName}</Text>
           <Text style={styles.accItem}>Grade/Class: {child.gradeClass}</Text>
-          <Text style={styles.accItem}>Student ID: {child.studentID}</Text>
+          {/* <Text style={styles.accItem}>Student ID: {child.studentID}</Text>
           <Text style={styles.accItem}>Allowance Amount: {child.financialInformation.allowanceAmount}</Text>
-          <Text style={styles.accItem}>Allowance Frequency: {child.financialInformation.allowanceFrequency}</Text>
+          <Text style={styles.accItem}>Allowance Frequency: {child.financialInformation.allowanceFrequency}</Text> */}
         </View>
       ))}
       {isEditing ? (

@@ -10,6 +10,7 @@ const HomeScreen = ({navigation}) => {
 
   const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
+  const [parent, setParent] = useState(null);
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -24,7 +25,6 @@ const HomeScreen = ({navigation}) => {
   }, []); 
 
   //fetch parent data function
-  const [parent, setParent] = useState(null);
   useEffect(() => {
     fetchData();
   }, [accountType, userEmail]);
@@ -34,6 +34,7 @@ const HomeScreen = ({navigation}) => {
     try {
       const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
       const parentInfo = response.data;
+
       setParent(parentInfo)
        } 
     catch (error) {
@@ -76,7 +77,7 @@ const HomeScreen = ({navigation}) => {
   {/* {parent.children.map((child, index) => ( */}
         <View>
           <Text> Balance</Text>
-          <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.0 <FontAwesomeIcon icon={ faEyeSlash }/></Text>
+          <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.{parent.financialInformation.allowanceBalAmount}<FontAwesomeIcon icon={ faEyeSlash }/></Text>
         </View>
       {/* ))} */}
   </View>
