@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LoginScreen = ({ navigation}) => {
-  const { accountType,setAuthData} = useAuth();
+  const { accountType,token,setAuthData} = useAuth();
   const [user, setUser] = useState({
     email: '',
     password: '',
@@ -19,12 +19,12 @@ const LoginScreen = ({ navigation}) => {
       const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
       const userEmailResponse = response.data.email;
       const token = response.data.token;
-      await AsyncStorage.setItem('authToken', token);
+      // await AsyncStorage.setItem('authToken', token);
       setUser({
         email: '',
         password: '',
       });
-      setAuthData(accountType, userEmailResponse); // Update the AuthContext values
+      setAuthData(accountType, userEmailResponse,token); // Update the AuthContext values
 
       alert('Logged in successfully!');
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';

@@ -5,10 +5,13 @@ import { StyleSheet, Text, View, TouchableOpacity,ScrollView ,Image,TextInput} f
 import { useSelector, useDispatch } from 'react-redux';
 import { addToCart} from "../reduxStore/reducers/CartReducer";
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'
 
  
 const ProductList=({})=> {
+  const {userEmail} = useAuth();
   const [products, setProducts] = useState([]);
+  const [query, setQuery] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart.cart);
@@ -29,7 +32,7 @@ const ProductList=({})=> {
   }, []);
   const handleCategoryAll = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/product/`, {
+      const response = await axios.get(`https://pocket-money.up.railway.app/product/vendors/${userEmail}`, {
         timeout: 5000,
       });
       const productData = response.data;
@@ -37,12 +40,12 @@ const ProductList=({})=> {
       setSelectedCategory('All')
 
     } catch (error) {
-      console.error('Error fetching products data:', error);
+      console.error('Error fetching products category all data:', error);
     }};
 
   const handleCategory = async (category) => {
       try {
-        const response = await axios.get(`https://pocket-money.up.railway.app/product/category/${category}`, {
+        const response = await axios.get(`https://pocket-money.up.railway.app/product/${userEmail}/category/${category}`, {
           timeout: 5000,
         });
         const productData = response.data;
@@ -50,12 +53,12 @@ const ProductList=({})=> {
         setSelectedCategory(category);
   
       } catch (error) {
-        console.error('Error fetching products data:', error);
+        console.error('Error fetching products category data:', error);
     }};
   
 const handleSearch = async () => {
         try {
-          const response = await axios.get(`https://pocket-money.up.railway.app/product/Search/search?query=${query}`, {
+          const response = await axios.get(`https://pocket-money.up.railway.app/product/vendors/${userEmail}/search?query=${query}`, {
             timeout: 5000,
           });
       
@@ -104,7 +107,7 @@ const handleSearch = async () => {
        
         <View style={styles.containerCategory} >
         <TouchableOpacity style={styles.buttonGreen} onPress={() => handleCategory('Others')}>
-          <Text style={{ color: 'white', textAlign: 'center' }}>Others</Text>
+          <Text style={{ color: 'white', textAlign: 'center' }}>others</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonPurple} onPress={() => handleCategoryAll('All')}>
           <Text style={{ color: 'white', textAlign: 'center' }}>All</Text>

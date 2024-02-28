@@ -3,16 +3,17 @@ import React, { createContext, useContext, useState } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [accountType, setAccountType] = useState('default');
+  const [accountType, setAccountType] = useState('');
   const [userEmail, setUserEmail] = useState('');
-
-  const setAuthData = (type, email) => {
+  const[token,setToken]=useState('')
+  const setAuthData = (type, email,token) => {
     setAccountType(type);
     setUserEmail(email);
+    setToken(token)
   };
 
   return (
-    <AuthContext.Provider value={{ accountType, userEmail, setAuthData }}>
+    <AuthContext.Provider value={{ accountType, userEmail, token,setAuthData }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
+import React,{useEffect} from 'react';
 import { useNavigation } from '@react-navigation/native'; 
 import { useAuth } from '../context/AuthContext'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,39 +13,44 @@ const WelcomeScreen = () => {
   const checkUserSignInStatus = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-  
-      if (!token) {
+      const accountType=''
+      if (accountType) {
+        console.log('User already signed in');
+        const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
+        navigation.navigate(homeScreen) 
+        return true;
+      } else {
         console.log('User not signed in');
-        return null;
+        return false;
       }
-      const response = await axios.get('https://pocket-money.up.railway.app/parent/check', {
-        headers: {
-          'x-auth-token': token,
-        },
-      });
-        return response.data;
     } catch (error) {
       // Handle error, e.g., user is not signed in
       console.error('Error checking user sign-in status:', error);
-      return null;
+      return false;
     }
   };
-
-  const handleAccountSelection = async (type) => {
+  
+const handleAccountSelection = async (type) => {
   try {
     const isUserSignedIn = await checkUserSignInStatus();
     if (isUserSignedIn) {
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
       navigation.navigate(homeScreen);
-    }else {
+    }
+    else {
    
       if (type === 'parent') {
-        navigation.navigate('SignIn');
-        setAuthData('parent'); // Match the case
+        const setAuthDataPromise = new Promise((resolve) => {
+          setAuthData('parent'); 
+          resolve();
+        });
+        await setAuthDataPromise;
+        await AsyncStorage.setItem('account', accountType);
+          navigation.navigate('SignIn');
       }
       else if (type === 'vendor') {
+       await setAuthData('vendor');
         navigation.navigate('SignIn');
-        setAuthData('vendor');
       }
    }
    console.log('acountType',accountType )
@@ -54,7 +59,8 @@ const WelcomeScreen = () => {
     console.error('Error checking user sign-in status:', error);
     navigation.navigate('SignIn'); // Replace with your default screen
   }
-};
+}
+
 
   return (
     <View style={styles.container}>

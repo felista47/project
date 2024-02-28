@@ -47,7 +47,7 @@ const VendorHomeScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
        <View style={styles.containerOne}>
-            <View style={styles.containerProfile}>
+            <TouchableOpacity style={styles.containerProfile}>
               {/* profile pic */}
               <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile')}>
                 <Image style={styles.image} source={require('../../assets/avatar.png')} />
@@ -57,7 +57,7 @@ const VendorHomeScreen = ({navigation}) => {
                   <Text style={styles.greetingText}>{greeting},</Text>
                   <Text style={styles.text}>{userEmail}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
             <View style={styles.containerIcons}>
               <FontAwesomeIcon icon={ faBell } />
               <FontAwesomeIcon icon={ faChartPie } />

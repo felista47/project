@@ -3,9 +3,13 @@ import { View, TextInput, Button, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {Picker} from '@react-native-picker/picker'
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
 
 const AddProduct = () => {
+  const {userEmail} = useAuth();
+
   const [product, setProduct] = useState({
+    vendor:'',
       productImage:'',
       productName: '',
       productDescription: '',
@@ -22,7 +26,7 @@ const AddProduct = () => {
         }
       }
     })();
-  }, []);
+  }, [userEmail]);
 
   const pickImage = async () => {
     try {
@@ -50,7 +54,10 @@ const AddProduct = () => {
   
 
   const handleAddProduct = async () => {
+    setProduct(prevProduct => ({ ...prevProduct, vendor: userEmail }));
     try {
+      console.log('product', userEmail,product);
+
       const response = await axios.post('https://pocket-money.up.railway.app/product', product, {
       
       });
@@ -59,6 +66,7 @@ const AddProduct = () => {
   
       // Clear form fields after adding the product
       setProduct({
+        vendor:'',
         productImage:'',
         productName: '',
         productDescription: '',

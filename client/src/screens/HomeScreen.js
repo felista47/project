@@ -53,7 +53,7 @@ const HomeScreen = ({navigation}) => {
 <View style={styles.mainContainer}>
       {/* top part contains user image links to account, notification and spending chart */}
   <View style={styles.containerOne}>
-  <View style={styles.containerProfile}>
+  <TouchableOpacity style={styles.containerProfile} onPress={navigateToProfile}>
       {/* profile pic */}
       <TouchableOpacity style={styles.avatar} onPress={navigateToProfile}>
         <Image style={styles.image} source={require('../../assets/avatar.png')} />
@@ -64,7 +64,7 @@ const HomeScreen = ({navigation}) => {
             <Text style={styles.greetingText}>{greeting},</Text>
             <Text style={styles.text}>{userEmail}</Text>
         </View>
-  </View>
+  </TouchableOpacity>
     <View style={styles.containerIcons}>
       <FontAwesomeIcon icon={ faBell } />
       <FontAwesomeIcon icon={ faChartPie } />
@@ -73,12 +73,12 @@ const HomeScreen = ({navigation}) => {
 
       {/* balance of user account */}
   <View style={styles.containerTwo}>
-  {parent.children.map((child, index) => (
-        <View key={index} >
+  {/* {parent.children.map((child, index) => ( */}
+        <View>
           <Text> Balance</Text>
-          <Text style={styles.containerTwoText}>KSH.{child.financialInformation.allowanceAmount}  <FontAwesomeIcon icon={ faEyeSlash }/></Text>
+          <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.0 <FontAwesomeIcon icon={ faEyeSlash }/></Text>
         </View>
-      ))}
+      {/* ))} */}
   </View>
 
   {/* withdraw and deposit options */}
@@ -104,15 +104,15 @@ const HomeScreen = ({navigation}) => {
       <FontAwesomeIcon icon={ faScroll }/>
       </View>
       <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
+        <Text placeholder=''>Your transaction will appear hear</Text>
+        {/* <Text>338890</Text> */}
       </View>
-      <View>
+      {/* <View>
         <Text>- KSH 20</Text>
         <Text>10 Jan 2024</Text>
-      </View>
+      </View> */}
     </View>
-    <View style={styles.transactionItem}>
+    {/* <View style={styles.transactionItem}>
       <View  style={styles.transactionItemIcon} >
       <FontAwesomeIcon icon={ faScroll }/>
       </View>
@@ -176,7 +176,7 @@ const HomeScreen = ({navigation}) => {
         <Text>- KSH 20</Text>
         <Text>10 Jan 2024</Text>
       </View>
-    </View>
+    </View> */}
   </ScrollView>
 </View>
   );
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   containerProfile:{
-    padding:10,
+    paddingLeft:20,
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',

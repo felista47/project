@@ -5,11 +5,12 @@ import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } fro
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
 const ProfileScreen = () => {
-  const { accountType,userEmail} = useAuth();
+  const { accountType,userEmail,token,setAuthData} = useAuth();
   const navigation = useNavigation();
   const [parent, setParent] = useState(null);
 
@@ -23,26 +24,39 @@ const ProfileScreen = () => {
     console.log('profile',accountType,userEmail)
 
   };
-
-
   useEffect(() => {
     fetchData();
   }, [accountType, userEmail]);
-  
 
-  const fetchData = async () => {
-    console.log('profileBefore',accountType,userEmail)
+    const fetchData = async () => {
+    console.log('profileBefore fetch',accountType,userEmail)
 
     try {
       const response = await axios.get(`https://pocket-money.up.railway.app/${accountType}/${userEmail}`);
       const parentData = response.data;
-      console.log('profileAfter',accountType,userEmail,parentData)
+      console.log('profileAfter fetch',accountType,userEmail,parentData)
 
       setParent(parentData);
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
+
+  const signOut = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      setAuthData(null,null, null);
+      navigation.navigate('WelcomeScreen');
+      console.log('Token set to null');
+    } catch (error) {
+      console.error('Error removing token:', error);
+    }
+  };
+  
+
+  
+
+
 
 
   if (!parent) {
@@ -137,7 +151,7 @@ const ProfileScreen = () => {
       </View>
     </TouchableOpacity>
 
-    <TouchableOpacity style={styles.accButtonRed}><Text>LogOut</Text></TouchableOpacity>
+    <TouchableOpacity style={styles.accButtonRed}onPress={signOut}><Text>LogOut</Text></TouchableOpacity>
  
   </ScrollView>
   );

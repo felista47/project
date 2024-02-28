@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext'
@@ -8,71 +8,78 @@ import axios from 'axios';
 
 const Deposit = () => {
   const [amount, setAmount] = useState('');
+  const [number, setNumber] = useState("");
   const [operator, setOperator] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const {userEmail} = useAuth();
-  console.log('depo',userEmail)
   const [editedData, setEditedData] = useState({
-    personalInfo: {
-      name: '',
-      phoneNumber: '',
-      homeAddress: '',
-    },
-    parentalDetails: {
-      parentRelationship: '',
-    },
-    userAccountInfo:{
-      email: ''
-    },
     children: [],
     financialInformation: {
-      allowanceBalAmount: 0,
+      allowanceBalAmount: amount,
       allowanceAmount: 0,
       allowanceFrequency: 'Weekly',
     },
   });
+
   const handleContinue = () => {
     // Validate the entered values if needed
     setShowConfirmation(true);
   };
+  const navigateToHome = () => {
+    navigation.navigate('HomeScreen'); 
+    console.log('profilefrom Home',accountType,userEmail)
+  };
+  // const handleConfirmDeposit = async () => {
+  //   try {
+  //     console.log(number)
+  //     const response = await axios.post(`https://tinybitdaraja-4f90552ae4f6.herokuapp.com/msp/hck/76892`, {
+  //       "account": "02303879986150",
+  //       "paybill": "542542",
+  //       "amount": amount,
+  //       "number":{value:number}
+  //     });
+  //     if (response.status === 200) {
+  //       await updateBalance();
 
-  const handleConfirmDeposit = async () => {
+  //       // show pop up
+  //       Alert.alert('Deposit Alert', `Mpesa pop up has been sent to ${number}`, [
+  //         {
+  //           text: 'Cancel',
+  //           onPress: () => console.log('Cancel Pressed'),
+  //           style: 'cancel'
+  //         },
+  //         { text: 'Ok', onPress: () =>{navigateToHome}  },
+  //       ]);
+  //     } 
+  //   }
+  //   catch (error){
+  //     // show error
+  //     await updateBalance();
+  //     navigateToHome()
+  //     console.error('Error making API request:', error);
+
+  //   }
+  // };
+ const updateBalance =async()=>{
     try {
       // Make API request to update user data
-      const response = await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, {
-        financialInformation: {
-          allowanceBalAmount: editedData.financialInformation.allowanceBalAmount + parseFloat(amount),
-        },
-      });
-
-      // Update local state with edited data
-      setParent(response.data);
+      const response = await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`,editedData);
     } catch (error) {
       console.error('Error updating user data:', error);
     }
-  };
+  
+
+ }
+  
 
   return (
     <View>
       {!showConfirmation ? ( // Display deposit details form
         <View style={styles.DepContainerOne}>
           <Text style={styles.DepContainerOneText}>Deposit Cash</Text>
-          <TextInput
-  style={styles.input}
-  placeholder="KSH."
-  value={amount}
-  onChangeText={(text) =>
-    setEditedData({
-      ...editedData,
-      financialInformation: {
-        ...editedData.financialInformation,
-        allowanceBalAmount: parseFloat(text),
-      },
-    })
-  }
-/>
-
-          <Picker
+          <TextInput style={styles.input} placeholder="KSH." value={amount}onChangeText={(text) => setAmount(text)}/>
+          <TextInput style={styles.input} placeholder="07232" value={number}onChangeText={(text) => setNumber(text)}/>
+        <Picker
             selectedValue={operator}
             onValueChange={(itemValue) => setOperator(itemValue)}
             style={styles.selectInput}
@@ -95,6 +102,10 @@ const Deposit = () => {
               <View>
                 <Text>SOURCE OF FUNDS</Text>
                 <Text>{operator}</Text>
+              </View>
+              <View>
+                <Text>Number</Text>
+                <Text>{number}</Text>
               </View>
               <View>
                 <Text>AMOUNT</Text>
