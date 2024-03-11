@@ -4,6 +4,7 @@ import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
+import { useFocusEffect } from '@react-navigation/native';
 
 
 const HomeScreen = ({navigation}) => {
@@ -41,6 +42,16 @@ const HomeScreen = ({navigation}) => {
       console.error('Error fetching user data:', error);
     }
   };
+
+  
+useFocusEffect(
+  React.useCallback(() => {
+    fetchData();
+    return () => {
+      // Cleanup function if needed
+    };
+  }, [])
+);
 
   if (!parent) {
     return <Text>Loading...</Text>;

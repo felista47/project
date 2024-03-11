@@ -1,23 +1,17 @@
-import { StyleSheet, Text, View, TouchableOpacity,Image, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,TextInput, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
 
 
 const Child = () => {
-  const { accountType,userEmail} = useAuth();
-
+  const { userEmail} = useAuth();
   const [parent, setParent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    children: [],
-    financialInformation: {
-      allowanceBalAmount: 0,
-      allowanceAmount: 0,
-      allowanceFrequency: 'Weekly',
-    },
+  const [children, setChildren] = useState({
+    childFullName: '',
+    gradeClass: '',
+    studentID: '', 
   });
 
   useEffect(() => {
@@ -27,113 +21,120 @@ const Child = () => {
   const fetchData = async () => {
     try {
       const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`);
-      const childData = response.data;
-
-      setParent(childData);
-      setEditedData(childData);
+      const parentData = response.data;
+      console.log(parentData)
+      setParent(parentData)
+      setChildren(parentData.children); // Set children state with fetched data
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Error fetching parents children data:', error);
     }
   };
-
   const handleEditPress = () => {
-    setIsEditing(true);
+    setIsEditing(true); 
   };
 
   const handleSavePress = async () => {
     try {
       // Make API request to update user data
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`);
+      const dataToSend = { children: [children] };
+
+    console.log('child info',dataToSend)
+    const response = await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, dataToSend);
 
       // Update local state with edited data
-      setParent(editedData);
+      const parentData = response.data;
+      setChildren(parentData.children); // Set children state with fetched data
+      if (response.status === 200) {
+        setParent({ ...parent, children }); // Update local parent state
+      } else {
+        console.error('Error updating child data:', response.data.error);
+      }
 
-      // Exit edit mode
-      setIsEditing(false);
+      setIsEditing(false); // Exit edit mode
     } catch (error) {
-      console.error('Error updating user data:', error);
+      console.error('Error updating user child data:', error);
     }
   };
 
-
-    const deleteChild = async () => {
+  const deleteChild = async (childId) => {
       try {
-        // Send a DELETE request to the server
-        const response = await axios.delete(`YOUR_SERVER_URL/${parentEmail}/children/${childId}`);
-  
-        // Check the response status
-        if (response.status === 200) {
+        console.log("before delete requesst",userEmail,childId)
+        const response = await axios.delete(`https://pocket-money.up.railway.app/parent/${userEmail}/children/${childId}`);
+          if (response.status === 200) {
           console.log('Child deleted successfully');
-          // Handle any other actions after successful deletion
+          await fetchData();
         } else {
-          console.log('Error deleting child:', response.data.error);
-          // Handle error scenarios
+          console.log('Error deleting child: delete end point', response.data.error);
         }
       } catch (error) {
-        console.error('Error deleting child:', error.message);
-        // Handle network or other errors
+        console.error('Error deleting child catch err:', error.message);
       }
     };
   
   const handleCancelPress = () => {
-    // Reset editedData to current parent data
-    setEditedData(parent);
-
-    // Exit edit mode
     setIsEditing(false);
   };
 
-  if (!parent) {
-    return <Text>Loading...</Text>;
-  }
+  const handleChildPress = async (childId) => {
+    console.log('child id',childId)
+    try {
+      // Call deleteChild with the childId
+      await deleteChild(childId);
+    } catch (error) {
+      console.error('Error handling child press:', error);
+    }
+}
+  
+const handleInputChange = (field, value, childId) => {
+  setChildren((prevChildren) =>
+    prevChildren.map((child) =>
+      child._id === childId ? { ...child, [field]: value } : child
+    )
+  );
+};
+
+
+if (!parent) {
+  return <Text>Loading...</Text>;
+}
+
+
   return (
     <ScrollView style={styles.accItem}>
-    
 
-      {/* Displaying child data */}
-      {parent.children.map((child, index) => (
-        <View key={index}>
+      {children.length > 0 ? (
+      <>
+      {children.map((child, index) => (
+       <TouchableOpacity key={index}>
           <Text style={styles.accItem} >Child {index + 1}</Text>
+          <Text style={styles.accItem}>Child Full Id: {child._id}</Text>
           <Text style={styles.accItem}>Child Full Name: {child.childFullName}</Text>
           <Text style={styles.accItem}>Grade/Class: {child.gradeClass}</Text>
-          {/* <Text style={styles.accItem}>Student ID: {child.studentID}</Text>
-          <Text style={styles.accItem}>Allowance Amount: {child.financialInformation.allowanceAmount}</Text>
-          <Text style={styles.accItem}>Allowance Frequency: {child.financialInformation.allowanceFrequency}</Text> */}
-        </View>
+          <Text style={styles.accItem}>Student ID: {child.studentID}</Text> 
+          <TouchableOpacity style={styles.ButtonBlue} onPress={() => handleChildPress(child._id)}><Text>Delete</Text></TouchableOpacity>
+
+        </TouchableOpacity>
       ))}
       {isEditing ? (
-        <View>          
-          {/* Form for editing child data */}
-          {editedData.children.map((child, index) => (
-            <View key={index}>
-              <Text>Child {index + 1}</Text>
-              <TextInput
-                placeholder={`Child ${index + 1} Full Name`}
-                value={child.childFullName}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, childFullName: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Grade/Class`}
-                value={child.gradeClass}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, gradeClass: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Student ID`}
-                value={child.studentID}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, studentID: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Allowance Amount`}
-                value={child.financialInformation.allowanceAmount.toString()}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceAmount: Number(text) } } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Allowance Frequency`}
-                value={child.financialInformation.allowanceFrequency}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceFrequency: text } } : c)) })}
-              />
-            </View>
-          ))}
+        <>          
+           <TextInput
+          style={styles.input}
+          placeholder={`Child Full Name`}
+          // value={child.childFullName}
+          onChangeText={(text) => handleInputChange( 'childFullName', text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={`Grade/Class`}
+          // value={child.gradeClass}
+          onChangeText={(text) => handleInputChange( 'gradeClass', text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={`Child Student ID`}
+          // value={child.studentID}
+          onChangeText={(text) => handleInputChange('studentID', text)}
+        />
 
           <TouchableOpacity onPress={handleSavePress}>
             <Text>Save</Text>
@@ -141,12 +142,37 @@ const Child = () => {
           <TouchableOpacity onPress={handleCancelPress}>
             <Text>Cancel</Text>
           </TouchableOpacity>
-        </View>
+        </>
       ) : (
         <TouchableOpacity onPress={handleEditPress}>
           <Text>Edit</Text>
         </TouchableOpacity>
       )}
+       </>
+    ) : (
+      <>
+    {/* Form for adding a child */}
+    <TextInput
+            placeholder="Full Name"
+            value={children.childFullName}
+            onChangeText={(text) => handleInputChange('childFullName', text)}
+          />
+          <TextInput
+            placeholder="Grade/Class"
+            value={children.gradeClass}
+            onChangeText={(text) => handleInputChange('gradeClass', text)}
+          />
+          <TextInput
+            placeholder="Student ID"
+            value={children.studentID}
+            onChangeText={(text) => handleInputChange('studentID', text)}
+          />
+
+<TouchableOpacity onPress={handleSavePress}>
+      <Text>Add Child</Text></TouchableOpacity>
+  </>
+)}
+
     </ScrollView>
   );
 };
@@ -173,5 +199,19 @@ const styles = StyleSheet.create({
     marginLeft:20,
     marginRight:30,
   },
+  ButtonBlue:{
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#58C2FD',
+    width: 150,
+    alignSelf: 'center',
+    alignItems:'center',
+    elevation: 8, 
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
+},
 
 })

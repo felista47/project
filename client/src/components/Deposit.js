@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import axios from 'axios';
 
 
-const Deposit = () => {
+const Deposit = ({navigation}) => {
   const [parent, setParent] = useState('');
   const [number, setNumber] = useState("");
   const [operator, setOperator] = useState('');
@@ -19,13 +19,14 @@ const Deposit = () => {
   });
 
   const handleContinue = () => {
-    setParent(editedData);
+    // Convert allowance balance amount to number
+    const allowanceBalAmount = parseFloat(editedData.financialInformation.allowanceBalAmount);
+    // Update editedData with the converted value
+    setEditedData({ ...editedData, financialInformation: { ...editedData.financialInformation, allowanceBalAmount } });
+    setParent(editedData)
     setShowConfirmation(true);
   };
-  // const navigateToHome = () => {
-  //   navigation.navigate('HomeScreen'); 
-  //   console.log('profilefrom Home',accountType,userEmail)
-  // };
+ 
   // const handleConfirmDeposit = async () => {
   //   try {
   //     console.log(number)
@@ -60,16 +61,19 @@ const Deposit = () => {
 
   const handleConfirmDeposit = async () => {
     try {
+      
+      console.log(editedData)
       // Make API request to update user data
       await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, editedData);
 
       // Update local state with edited data
-      setParent(editedData);
       alert('deposit made succesfully')
+      navigation.navigate('HomeScreen');
     } catch (error) {
       console.error('Error updating user data:', error);
     }
   };
+
   
 
   return (
@@ -79,10 +83,11 @@ const Deposit = () => {
           <Text style={styles.DepContainerOneText}>Deposit Cash</Text>
           <TextInput style={styles.input}
            placeholder="KSH."
+           keyboardType="numeric"
            value={editedData.financialInformation.allowanceBalAmount}
            onChangeText={(text) => setEditedData({ ...editedData, financialInformation: { ...editedData.financialInformation, allowanceBalAmount: text } })}
          />
-          <TextInput style={styles.input} placeholder="07232" value={number}onChangeText={(text) => setNumber(text)}/>
+          <TextInput style={styles.input} placeholder="07232" value={number}onChangeText={(text) =>setNumber(text)}/>
         <Picker
             selectedValue={operator}
             onValueChange={(itemValue) => setOperator(itemValue)}
