@@ -19,10 +19,11 @@ const SignUpScreen  = ({ navigation }) => {
   const createAccount = async () => {
       try {
         console.log(user,accountType);
-        const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`, user);
+        const response = await axios.post(`http://172.16.120.106:3000/${accountType}/register`, user);
+        console.log('data recived from response',response.data);
         const userEmailResponse = response.data.email;
-        const token = response.data.token;
-        await AsyncStorage.setItem('authToken', token);
+        const uid= response.data.uid;
+        await AsyncStorage.setItem('UID', uid);
         setUser({
           email: '',
           password: '',
@@ -34,24 +35,18 @@ const SignUpScreen  = ({ navigation }) => {
       }
     catch (error) {
       console.error('Error logging in:', error);
-
-      // Display user-friendly error messages based on the type of error
       if (error.response) {
-        // The request was made, but the server responded with a status code that falls out of the range of 2xx
         console.log('Server responded with an error status:', error.response.status);
-
         if (error.response.status === 401) {
           alert('Invalid email or password. Please try again.');
         } else {
           alert('An error occurred while logging in. Please try again later.');
         }
       } else if (error.request) {
-        // The request was made but no response was received
         console.log('No response received from the server.');
         alert('No response received from the server. Please try again later.');
       } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error setting up the request:', error.message);
+                console.log('Error setting up the request:', error.message);
         alert('An unexpected error occurred. Please try again later.');
       }
     }

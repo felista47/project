@@ -16,15 +16,16 @@ const LoginScreen = ({ navigation}) => {
   const handleLogin = async () => {
     try {
       console.log(user,accountType);
-      const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
+      const response = await axios.post(`http://172.16.120.106:3000/${accountType}/login`, user);
+      console.log('data recieved from res',response.data);
       const userEmailResponse = response.data.email;
-      const token = response.data.token;
-      // await AsyncStorage.setItem('authToken', token);
+      const uid = response.data.uid;
+      console.log('login',uid)
       setUser({
         email: '',
         password: '',
       });
-      setAuthData(accountType, userEmailResponse,token); // Update the AuthContext values
+      setAuthData(accountType, userEmailResponse,uid); // Update the AuthContext values
 
       alert('Logged in successfully!');
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
@@ -32,23 +33,17 @@ const LoginScreen = ({ navigation}) => {
       console.log('login', accountType, userEmailResponse);
     } catch (error) {
       console.error('Error logging in:', error);
-
-      // Display user-friendly error messages based on the type of error
       if (error.response) {
-        // The request was made, but the server responded with a status code that falls out of the range of 2xx
         console.log('Server responded with an error status:', error.response.status);
-
         if (error.response.status === 401) {
           alert('Invalid email or password. Please try again.');
         } else {
           alert('An error occurred while logging in. Please try again later.');
         }
       } else if (error.request) {
-        // The request was made but no response was received
         console.log('No response received from the server.');
         alert('No response received from the server. Please try again later.');
       } else {
-        // Something happened in setting up the request that triggered an Error
         console.log('Error setting up the request:', error.message);
         alert('An unexpected error occurred. Please try again later.');
       }

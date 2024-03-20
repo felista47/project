@@ -10,6 +10,7 @@ const Child = () => {
     const [isEditingChild, setIsEditingChild] = useState(false);
     const [editingChild, setEditingChild] = useState(null);
     const [newChild, setNewChild] = useState({
+      parent:'',
       childFullName: '',
       gradeClass: '',
       studentID: '',
@@ -21,9 +22,9 @@ const Child = () => {
 
     const fetchData = async () => {
       try {
-        const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`);
+        const response = await axios.get(`https://pocket-money.up.railway.app/children/parent/${userEmail}`);
         const parentData = response.data;
-        setChildren(parentData.children);
+        setChildren(parentData);
       } catch (error) {
         console.error('Error fetching parents children data:', error);
       }
@@ -34,18 +35,19 @@ const Child = () => {
     };
 
     const handleSubmitNewChild = async () => {
+      setNewChild(prevChild => ({ ...prevChild, parent: userEmail }));
+
       try {
-        const updatedChildren = [...children, newChild];
-        console.log('Request Body:', { children: updatedChildren });
-        const response = await axios.patch(
-          `https://pocket-money.up.railway.app/parent/${userEmail}`,
-          { children: updatedChildren }
+        console.log('child', userEmail,newChild);
+        const response = await axios.post(
+          `https://pocket-money.up.railway.app/children`,
+          newChild
         );
     
         if (response.status === 200) {
           console.log('New child added successfully!');
           const parentData = response.data;
-          setChildren(parentData.children);
+          setChildren(parentData);
           setNewChild({ childFullName: '', gradeClass: '', studentID: '' });
         } else {
           console.error('Error adding child:', response.data);
@@ -67,7 +69,7 @@ const Child = () => {
     const deleteChild = async (childId) => {
     try {
       console.log("before delete requesst",userEmail,childId)
-      const response = await axios.delete(`https://pocket-money.up.railway.app/parent/${userEmail}/children/${childId}`);
+      const response = await axios.delete(`https://pocket-money.up.railway.app/children/${userEmail}/children/${childId}`);
         if (response.status === 200) {
         console.log('Child deleted successfully');
         await fetchData();
@@ -113,14 +115,10 @@ const Child = () => {
               />
               <TextInput
                 placeholder="Grade/Class"
-                value={editingChild.gradeClass}
+                // value={editingChild.gradeClass}
                 onChangeText={(text) => handleInputChange('gradeClass', text)}
               />
-                 <TextInput
-                placeholder="student ID"
-                // value={editingChild.studentID}
-                onChangeText={(text) => handleInputChange('StudentID', text)}
-              />
+             
 
               <TouchableOpacity onPress={() => handleSubmitNewChild(editingChild)}>
                 <Text>Save Changes</Text>

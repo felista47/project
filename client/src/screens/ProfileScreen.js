@@ -10,13 +10,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const ProfileScreen = () => {
-  const { accountType,userEmail,token,setAuthData} = useAuth();
+  const { accountType,userEmail,uid,setAuthData} = useAuth();
   const navigation = useNavigation();
   const [parent, setParent] = useState(null);
 
   const navigateToParent = () => {
     navigation.navigate('Parent'); 
-    console.log('profile',accountType,userEmail)
+    console.log('profile',accountType,userEmail,uid)
 
   };
   const navigateToChild = () => {
@@ -31,18 +31,21 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     fetchData();
-  }, [accountType, userEmail]);
+  }, [accountType, userEmail,uid]);
 
     const fetchData = async () => {
-    console.log('profileBefore fetch',accountType,userEmail)
+    console.log('profileBefore fetch',accountType,userEmail,uid)
 
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/${accountType}/${userEmail}`);
+      const response = await axios.get(`http://172.16.120.106:3000/parent/${uid}`);
       const parentData = response.data;
 
-      setParent(parentData);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+      if (Array.isArray(parentData) && parentData.length === 0) {
+        setParent({}); // Set to an empty object for editing
+      } else {
+        setParent(parentData);
+      }    } catch (error) {
+      console.error('Error fetching parent profile data:', error);
     }
   };
 
@@ -78,8 +81,8 @@ const ProfileScreen = () => {
           </TouchableOpacity>
           {/* USER GREETINGS */}
    <View style={styles.userMinInfo}>
-      <Text style={styles.text}>{parent.userAccountInfo.email}</Text>
-      <Text>{parent.personalInfo.phoneNumber}</Text>
+      <Text style={styles.text}>{userEmail}</Text>
+      {/* <Text>{parent.personalInfo.phoneNumber}</Text> */}
    </View>
 
       </View>

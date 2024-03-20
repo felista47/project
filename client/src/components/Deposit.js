@@ -64,7 +64,7 @@ const Deposit = ({navigation}) => {
       
       console.log(editedData)
       // Make API request to update user data
-      await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, editedData);
+      await axios.put(`https://pocket-money.up.railway.app/children`, editedData);
 
       // Update local state with edited data
       alert('deposit made succesfully')

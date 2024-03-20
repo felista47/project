@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView , Button} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -8,10 +8,9 @@ import { useFocusEffect } from '@react-navigation/native';
 
 
 const HomeScreen = ({navigation}) => {
-
   const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
-  const [parent, setParent] = useState(null);
+  const [parent, setParent] = useState('');
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -25,7 +24,6 @@ const HomeScreen = ({navigation}) => {
     }
   }, []); 
 
-  //fetch parent data function
   useEffect(() => {
     fetchData();
   }, [accountType, userEmail]);
@@ -33,7 +31,7 @@ const HomeScreen = ({navigation}) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
+      const response = await axios.get(`https://pocket-money.up.railway.app/children/parent/${userEmail}`, { timeout: 5000 });
       const parentInfo = response.data;
 
       setParent(parentInfo)
@@ -43,7 +41,8 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
-  
+  // const allowanceBalAmount = c?.financialInformation?.allowanceBalAmount; // Optional chaining
+
 useFocusEffect(
   React.useCallback(() => {
     fetchData();
@@ -88,7 +87,7 @@ useFocusEffect(
   {/* {parent.children.map((child, index) => ( */}
         <View>
           <Text> Balance</Text>
-          <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.{parent.financialInformation.allowanceBalAmount}<FontAwesomeIcon icon={ faEyeSlash }/></Text>
+          {/* <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.{parent.financialInformation.allowanceBalAmount}<FontAwesomeIcon icon={ faEyeSlash }/></Text> */}
         </View>
       {/* ))} */}
   </View>
@@ -124,71 +123,6 @@ useFocusEffect(
         <Text>10 Jan 2024</Text>
       </View> */}
     </View>
-    {/* <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View> */}
   </ScrollView>
 </View>
   );
