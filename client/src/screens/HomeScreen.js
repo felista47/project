@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   buttonText:{
     color:'white',
   },
-  ButtonBlue:{
+  ButtonBlue:{//changed to graan
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#2ECC71',

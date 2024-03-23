@@ -6,7 +6,7 @@ import {Picker} from '@react-native-picker/picker'
 
 
 const Parent = () => {
-  const {uid} = useAuth();
+  const { accountType,userEmail,setAuthData} = useAuth();
   const [parent, setParent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
@@ -35,12 +35,12 @@ const Parent = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accountType, userEmail,]);
 
   const fetchData = async () => {
     try {
       // console.log('user UID',uid)
-      const response = await axios.get(`http://192.168.43.6:3000/parent/${uid}`);
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
       const parentData = response.data;
         setParent(parentData);
       setEditedData(parentData);

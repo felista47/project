@@ -10,13 +10,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const ProfileScreen = () => {
-  const { accountType,userEmail,uid,setAuthData} = useAuth();
+  const { accountType,userEmail,setAuthData} = useAuth();
   const navigation = useNavigation();
   const [parent, setParent] = useState(null);
 
   const navigateToParent = () => {
     navigation.navigate('Parent'); 
-    console.log('profile',accountType,userEmail,uid)
+    console.log('profile',accountType,userEmail)
 
   };
   const navigateToChild = () => {
@@ -31,13 +31,13 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     fetchData();
-  }, [accountType, userEmail,uid]);
+  }, [accountType, userEmail,]);
 
     const fetchData = async () => {
-    console.log('profileBefore fetch',accountType,userEmail,uid)
+    console.log('profileBefore fetch',accountType,userEmail)
 
     try {
-      const response = await axios.get(`http://192.168.43.6:3000/parent/${uid}`);
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
       const parentData = response.data;
 
       if (Array.isArray(parentData) && parentData.length === 0) {
@@ -61,10 +61,6 @@ const ProfileScreen = () => {
   };
   
 
-  
-
-
-
 
   if (!parent) {
     return <Text>Loading...</Text>;
@@ -86,7 +82,7 @@ const ProfileScreen = () => {
    </View>
 
       </View>
-      <TouchableOpacity style={styles.ButtonBlue}><Text>Edit picture</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.ButtonGreen}><Text>Edit picture</Text></TouchableOpacity>
    </View>
 
    <View style={styles.accContainerTwo}>
@@ -177,40 +173,40 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   
   mainContainer:{
-    backgroundColor:'#ECF6FC',
-    paddingTop:30,
-    marginBottom:30,
+    backgroundColor:'#e0f2f1',
+    paddingTop:'7%',
+    marginBottom:'7',
   },
   mainContainerName:{
-    fontSize:30,
+    fontSize:24,
     alignSelf:'center',
   },
   accContainerOne: {
-    paddingTop:40,
+    paddingTop:'7%',
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
   },
   containerProfile:{
-    padding:10,
+    padding:'2%',
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 34,
+    height: 34,
     borderRadius: 999,
   },
   userMinInfo: {
-    marginLeft: 20,
+    marginLeft: '5%',
   },
   text: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   accContainerTwo:{
-    padding:10,
+    padding:'3%',
     width:'90%',
     alignSelf:'center',
     marginTop: 15,
@@ -233,6 +229,20 @@ const styles = StyleSheet.create({
       height: 3,
     },
     shadowRadius: 6,
+},
+ButtonGreen:{
+  borderRadius: 20,
+  padding: 10,
+  backgroundColor: '#2ECC71',
+  width: 150,
+  alignSelf: 'center',
+  alignItems:'center',
+  elevation: 8, 
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+  shadowRadius: 6,
 },
 ButtonRed:{
   borderRadius: 20,
