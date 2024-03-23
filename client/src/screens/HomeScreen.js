@@ -1,18 +1,16 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView , Button} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'
+import { useFocusEffect } from '@react-navigation/native';
 
 
 const HomeScreen = ({navigation}) => {
-  const route = useRoute();
-  const { accountType,email } = route.params || { accountType: 'default' };
-  let userId = '659a6c6e53fb33f5d4909b8d';
-console.log('hello',accountType,email)
-  //greetings function
+  const { accountType,userEmail,uid} = useAuth();
   const [greeting, setGreeting] = useState('');
+  const [parent, setParent] = useState('');
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -26,56 +24,74 @@ console.log('hello',accountType,email)
     }
   }, []); 
 
-  //fetch parent data function
-  const [parent, setParent] = useState(null);
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accountType, userEmail,uid]);
+  
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.30:5000/parent/${email}`,{ timeout: 5000 });
-      const parentData = response.data;
-      setParent(parentData); 
+      const response = await axios.get(`http://172.16.121.186:3000/parent/${uid}`, { timeout: 5000 });
+      const parentInfo = response.data;
+
+      setParent(parentInfo)
        } 
     catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
 
+  // const allowanceBalAmount = c?.financialInformation?.allowanceBalAmount; // Optional chaining
+
+useFocusEffect(
+  React.useCallback(() => {
+    fetchData();
+    return () => {
+      // Cleanup function if needed
+    };
+  }, [])
+);
+
   if (!parent) {
     return <Text>Loading...</Text>;
   }
+  const navigateToProfile = () => {
+    navigation.navigate('Profile'); 
+    console.log('profilefrom Home',accountType,userEmail)
+  };
 
   return (
 <View style={styles.mainContainer}>
       {/* top part contains user image links to account, notification and spending chart */}
   <View style={styles.containerOne}>
-<View style={styles.containerProfile}>
-  {/* profile pic */}
-   <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile')}>
-     <Image style={styles.image} source={require('../../assets/avatar.png')} />
-   </TouchableOpacity>
-   {/* USER GREETINGS */}
-   <View style={styles.userGreetings}>
-      <Text style={styles.greetingText}>{greeting},</Text>
-      <Text style={styles.text}>{parent.personalInfo.name}</Text>
-   </View>
-</View>
-<View style={styles.containerIcons}>
-  <FontAwesomeIcon icon={ faBell } />
-  <FontAwesomeIcon icon={ faChartPie } />
-</View>
+  <TouchableOpacity style={styles.containerProfile} onPress={navigateToProfile}>
+      {/* profile pic */}
+      <TouchableOpacity style={styles.avatar} onPress={navigateToProfile}>
+        <Image style={styles.image} source={require('../../assets/avatar.png')} />
+      </TouchableOpacity>
+
+      {/* USER GREETINGS */}
+        <View style={styles.userGreetings}>
+            <Text style={styles.greetingText}>{greeting},</Text>
+            <Text style={styles.text}>{userEmail}</Text>
+        </View>
+  </TouchableOpacity>
+    <View style={styles.containerIcons}>
+      <FontAwesomeIcon icon={ faBell } />
+      <FontAwesomeIcon icon={ faChartPie } />
+    </View>
   </View>
+
       {/* balance of user account */}
   <View style={styles.containerTwo}>
-  {parent.children.map((child, index) => (
-        <View key={index} >
+  {/* {parent.children.map((child, index) => ( */}
+        <View>
           <Text> Balance</Text>
-          <Text style={styles.containerTwoText}>KSH.{child.financialInformation.allowanceAmount}  <FontAwesomeIcon icon={ faEyeSlash }/></Text>
+          {/* <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.{parent.financialInformation.allowanceBalAmount}<FontAwesomeIcon icon={ faEyeSlash }/></Text> */}
         </View>
-      ))}
+      {/* ))} */}
   </View>
+
   {/* withdraw and deposit options */}
   <View style={styles.containerThree}>
 <TouchableOpacity style={styles.ButtonBlue} onPress={()=>navigation.navigate('Deposit')}>
@@ -85,11 +101,13 @@ console.log('hello',accountType,email)
 <Text style={styles.buttonText}>Withdraw</Text>
 </TouchableOpacity>
   </View>
+
   {/* Transaction statement */}
   <View style={styles.containerFour}>
     <Text style={styles.containerFourT1}>TRANSACTION STATEMENT</Text>
     <Text style={styles.containerFourT2}>See all</Text>
   </View>
+
   {/* Transaction statement item */}
   <ScrollView style={styles.containerFive}>
     <View style={styles.transactionItem}>
@@ -97,81 +115,16 @@ console.log('hello',accountType,email)
       <FontAwesomeIcon icon={ faScroll }/>
       </View>
       <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
+        <Text placeholder=''>Your transaction will appear hear</Text>
+        {/* <Text>338890</Text> */}
       </View>
-      <View>
+      {/* <View>
         <Text>- KSH 20</Text>
         <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
-    </View>
-    <View style={styles.transactionItem}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
-      </View>
-      <View>
-        <Text>UZA CANTEEN</Text>
-        <Text>338890</Text>
-      </View>
-      <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View>
+      </View> */}
     </View>
   </ScrollView>
-    </View>
+</View>
   );
 };
 
@@ -192,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   containerProfile:{
-    padding:10,
+    paddingLeft:20,
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',

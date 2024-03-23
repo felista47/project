@@ -1,167 +1,190 @@
-import { StyleSheet, Text, View, TouchableOpacity,Image, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,TextInput, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
 
 
-const Parent = () => {
-let userId = '659a6d9253fb33f5d4909b90';
+const Child = () => {
+    const { uid} = useAuth();
+    const [isEditingChild, setIsEditingChild] = useState(false);
+    const [editingChild, setEditingChild] = useState(null);
+    const [children, setChildren] = useState([]);
+    const [newChild, setNewChild] = useState({
+        Name: '',
+        Grade: '',
+        studentID: '',
+        frequency: '',
+        limit: 0,
+        balance: 0
+    });
 
-  const [parent, setParent] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    personalInfo: {
-      name: '',
-      contactInfo: {
-        phoneNumber: '',
-        emailAddress: '',
-      },
-      homeAddress: '',
-    },
-    parentalDetails: {
-      parentRelationship: '',
-    },
-    children: [],
-    financialInformation: {
-      allowanceBalAmount: 0,
-      allowanceAmount: 0,
-      allowanceFrequency: 'Weekly',
-    },
-  });
+    useEffect(() => {
+      fetchData();
+    }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchData = async () => {
+      try {
+        console.log(uid)
+        const response = await axios.get(`http://172.16.120.106:3000/student//${uid}`);
+        const parentData = response.data;
+        setChildren(parentData);
+        console.error('children data:',parentData);
+      } catch (error) {
+        console.error('Error fetching parents children data:', error);
+      }
+    };
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`http://172.16.54.69:5000/parent/${userId}`);
-      const parentData = response.data;
-
-      setParent(parentData);
-      setEditedData(parentData);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
-
-  const handleEditPress = () => {
-    setIsEditing(true);
-  };
-
-  const handleSavePress = async () => {
-    try {
-      // Make API request to update user data
-      await axios.patch(`http://172.16.55.0:5000/parent/${userId}`, editedData);
-
-      // Update local state with edited data
-      setParent(editedData);
-
-      // Exit edit mode
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating user data:', error);
-    }
-  };
-
-
-  const handleCancelPress = () => {
-    // Reset editedData to current parent data
-    setEditedData(parent);
-
-    // Exit edit mode
-    setIsEditing(false);
-  };
-
-  if (!parent) {
-    return <Text>Loading...</Text>;
-  }
-  return (
-    <ScrollView>
+    const handleInputChange = (name, value) => {
+      setNewChild({ ...newChild, [name]: value }); 
+    };
     
 
-      {/* Displaying child data */}
-      {parent.children.map((child, index) => (
-        <View key={index}>
-          <Text>Child {index + 1}</Text>
-          <Text>Child Full Name: {child.childFullName}</Text>
-          <Text>Grade/Class: {child.gradeClass}</Text>
-          <Text>Student ID: {child.studentID}</Text>
-          <Text>Allowance Amount: {child.financialInformation.allowanceAmount}</Text>
-          <Text>Allowance Frequency: {child.financialInformation.allowanceFrequency}</Text>
-        </View>
-      ))}
-      {isEditing ? (
-        <View>
-          {/* Form for editing parent data */}
-          <TextInput
-            placeholder="Name"
-            value={editedData.personalInfo.name}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, name: text } })}
-          />
-          <TextInput
-            placeholder="Phone Number"
-            value={editedData.personalInfo.contactInfo.phoneNumber}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, phoneNumber: text } } })}
-          />
-          <TextInput
-            placeholder="Email Address"
-            value={editedData.personalInfo.contactInfo.emailAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, emailAddress: text } } })}
-          />
-          <TextInput
-            placeholder="Home Address"
-            value={editedData.personalInfo.homeAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, homeAddress: text } })}
-          />
+    const handleSubmitNewChild = async () => {
 
-          {/* Form for editing child data */}
-          {editedData.children.map((child, index) => (
-            <View key={index}>
-              <Text>Child {index + 1}</Text>
-              <TextInput
-                placeholder={`Child ${index + 1} Full Name`}
-                value={child.childFullName}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, childFullName: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Grade/Class`}
-                value={child.gradeClass}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, gradeClass: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Student ID`}
-                value={child.studentID}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, studentID: text } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Allowance Amount`}
-                value={child.financialInformation.allowanceAmount.toString()}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceAmount: Number(text) } } : c)) })}
-              />
-              <TextInput
-                placeholder={`Child ${index + 1} Allowance Frequency`}
-                value={child.financialInformation.allowanceFrequency}
-                onChangeText={(text) => setEditedData({ ...editedData, children: editedData.children.map((c, i) => (i === index ? { ...c, financialInformation: { ...c.financialInformation, allowanceFrequency: text } } : c)) })}
-              />
+      try{  
+        const requestData = {
+          data: newChild,
+          uid: uid,
+    
+        };
+          console.log('child',requestData);
+       
+        const response = await axios.post(`http://172.16.120.106:3000/student`,requestData);
+    
+        if (response.status === 200) {
+          console.log('New child added successfully!');
+          const parentData = response.data;
+          setChildren(parentData);
+          setNewChild({
+            Name: '',
+            Grade: '',
+            studentID:'',
+            frequency: '',
+            limit: 0,
+            balance: 0
+        });
+         } else {
+          console.error('Error adding child:', response.data);
+     }
+      } catch (error) {
+        console.error('Error adding child:', error);
+      }
+    };
+
+    const handleEditChild = (child) => {
+      setIsEditingChild(true);
+      setEditingChild(child);
+    };
+    const handleDeletePress = async () => {
+      try {
+        const response = await axios.delete(`http://172.16.120.106:3000/student/${uid}`);
+        const parentData = response.data;
+        setChildren(parentData);
+        console.error('children data:',parentData);
+      } catch (error) {
+        console.error('Error fetching parents children data:', error);
+      }
+    };
+
+ return (
+    <ScrollView style={styles.accItem}>
+        {children.length > 0 ? (
+           <>
+        {children.map((child, index) => (
+          <TouchableOpacity key={index}>
+            <Text style={styles.accItem}>Child {index + 1}</Text>
+            <Text style={styles.accItem}>Child Full Name: {child.Name}</Text>
+            <Text style={styles.accItem}>Grade/Class: {child.Grade}</Text>
+            <Text style={styles.accItem}>Student ID: {child.studentID}</Text>
+            <View>
+            <TouchableOpacity onPress={() => handleDeletePress(child._id)}><Text>Delete</Text></TouchableOpacity>
+            {isEditingChild !== child._id && ( // Check if not already editing this child
+              <TouchableOpacity onPress={() => handleEditChild(child)}>
+                <Text>Edit</Text>
+              </TouchableOpacity>)}
             </View>
+          </TouchableOpacity>
           ))}
+          {isEditingChild && (
+            <></>
+              // <>
+              // <TextInput
+              //   editable={true}
+              //   placeholder="Full Name"
+              //   value={editingChild.childFullName}
+              //   onChangeText={(text) => handleInputChange('Name', text)}
+              // />
+              // <TextInput
+              //   placeholder="Grade"
+              //   value={editingChild.gradeClass}
+              //   onChangeText={(text) => handleInputChange('Grade', text)}
+              // />
+             
 
-          <TouchableOpacity onPress={handleSavePress}>
-            <Text>Save</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCancelPress}>
-            <Text>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity onPress={handleEditPress}>
-          <Text>Edit</Text>
-        </TouchableOpacity>
-      )}
+              // <TouchableOpacity onPress={() => handleSubmitNewChild(editingChild)}>
+              //   <Text>Save Changes</Text>
+              // </TouchableOpacity>
+              // <TouchableOpacity onPress={() => setIsEditingChild(false)}>
+              //   <Text>Cancel</Text>
+              // </TouchableOpacity>
+              // </>
+          )}
+
+           </>
+        ) : (
+           <>
+           {/* Form for adding a child */}
+             <TextInput placeholder="Full Name" value={newChild.Name} onChangeText={(text) => handleInputChange('Name', text)}/>
+             <TextInput placeholder="Grade/Class" value={newChild.Grade} onChangeText={(text) => handleInputChange('Grade', text)}/>
+             <TextInput placeholder="StudentID" value={newChild.studentID} onChangeText={(text) => handleInputChange('studentID', text)}/>
+             <TextInput placeholder="Allowance frequency" value={newChild.frequency} onChangeText={(text) => handleInputChange('frequency', text)}/>
+             <TextInput placeholder="allawonce limit"
+               keyboardType="numeric"
+               value={newChild.limit}
+               onChangeText={(text) => handleInputChange('limit',text )}/>
+             <TouchableOpacity onPress={handleSubmitNewChild}><Text>Add Child</Text></TouchableOpacity>
+           </>
+        )}
+
     </ScrollView>
   );
 };
 
-export default ProfileScreen;
+export default Child;
+const styles = StyleSheet.create({
+  accItem:{
+    width:'95%',
+    elevation:2,
+    height:100,
+    padding:20,
+    marginBottom:15,
+    borderRadius:10,
+    backgroundColor:'white',
+    alignSelf:'center',
+  },
+  accItemIcon:{
+    backgroundColor:'#58C2FD',
+    alignItems:'center',
+    paddingTop:10,
+    width:40,
+    height:40,
+    borderRadius:999,
+    marginLeft:20,
+    marginRight:30,
+  },
+  ButtonBlue:{
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#58C2FD',
+    width: 150,
+    alignSelf: 'center',
+    alignItems:'center',
+    elevation: 8, 
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
+},
+
+})

@@ -1,68 +1,81 @@
 import { View, Text,TextInput,StyleSheet,TouchableOpacity, KeyboardAvoidingView } from 'react-native'
 import React ,{useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-
-const auth = getAuth()
 
 const SignUpScreen  = ({ navigation }) => {
-  
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [validationMessage, setValidationMessage] = useState('')
+  const { accountType,setAuthData} = useAuth();
+  const [validationMessage, setValidationMessage] = useState('');
+  const [user, setUser] = useState({
+    email: '',
+    password: '',
+  });
 
 
-  let validateAndSet = (value,setValue) => {
-   setValue(value)
-}
-function checkPassword(firstpassword,secondpassword) {
-  if(firstpassword !== secondpassword){
-    setValidationMessage('Password do not match') 
-  }
-  else setValidationMessage('')
-}
-  async function createAccount() {
-    email === '' || password === '' 
-    ? setValidationMessage('required filled missing')
-    : ''
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert('User registered succesfully');
-      navigation.navigate('SignIn');
-    } catch (error) {
-      setValidationMessage(error.message);
+
+  const createAccount = async () => {
+      try {
+        console.log(user,accountType);
+        const response = await axios.post(`http://192.168.43.6:3000/${accountType}/register`, user);
+        console.log('data recived from response',response.data);
+        const userEmailResponse = response.data.email;
+        const uid= response.data.uid;
+        await AsyncStorage.setItem('UID', uid);
+        setUser({
+          email: '',
+          password: '',
+        });
+        setAuthData(accountType, userEmailResponse); // Update the AuthContext values
+        alert('Registered  successfully!');
+        navigation.navigate('SignIn',);
+        console.log('login', accountType, userEmailResponse);
+      }
+    catch (error) {
+      console.error('Error logging in:', error);
+      if (error.response) {
+        console.log('Server responded with an error status:', error.response.status);
+        if (error.response.status === 401) {
+          alert('Invalid email or password. Please try again.');
+        } else {
+          alert('An error occurred while logging in. Please try again later.');
+        }
+      } else if (error.request) {
+        console.log('No response received from the server.');
+        alert('No response received from the server. Please try again later.');
+      } else {
+                console.log('Error setting up the request:', error.message);
+        alert('An unexpected error occurred. Please try again later.');
+      }
     }
-  }
+        
+    
+  };
+
+
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.credentials}>
+
         <View style={styles.inputContainer}>
          <Ionicons name="mail" size={32} color="#EE6B22" style={styles.icon}/>
-         <TextInput style={styles.input} value={email}
-          onChangeText={(text) => setEmail(text)} placeholder="Email"/>
+         <TextInput style={styles.input} value={user.email}
+          onChangeText={(text) =>setUser({ ...user,email:text })} placeholder="Email"/>
         </View>
+
         <View style={styles.inputContainer}>
-        <Ionicons name="person-circle" size={32} color="#58C2FD" style={styles.icon}/>
-        <TextInput style={styles.input} placeholder="user"/>
-        </View>
-        <View style={styles.inputContainer}>
-        <Ionicons name="eye-off" size={32} color="#7282BC" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="password" value={password}
-          onChangeText={(value) => validateAndSet(value, setPassword)} secureTextEntry/>
-        </View>
-      <View style={styles.inputContainer}>
-      <Ionicons name="eye-off" size={32} color="green" style={styles.icon} />
-      <TextInput style={styles.input} value={confirmPassword}
-          onChangeText={(value) => validateAndSet(value,setConfirmPassword)}
-          secureTextEntry placeholder="confirm Password" onBlur={()=>checkPassword(password,confirmPassword)}/>
+      <Ionicons name="eye-off" size={32} color="#EE6B22" style={styles.icon} />
+      <TextInput style={styles.input} placeholder="Password" value={user.password} onChangeText={(text) =>setUser({ ...user,password:text })}/>
       </View>
+
       {<Text style={styles.error}>{validationMessage}</Text>}
       <Text style={styles.text}>Forgot password?</Text>
+
       <TouchableOpacity style={styles.button} onPress={createAccount}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Sign Up</Text>
-    </TouchableOpacity>
+      </TouchableOpacity>
       </View>
        <View>
        <Text style={styles.dontHave}>Already have an account?</Text>

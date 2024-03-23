@@ -1,49 +1,71 @@
 import { View, Text,TextInput,StyleSheet,TouchableHighlight,TouchableOpacity, Alert } from 'react-native'
 import React, {useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { useRoute } from '@react-navigation/native';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const auth = getAuth();
 
 const LoginScreen = ({ navigation}) => {
-  const [email,setEmail] = useState('');
-  const [password,setPassword] = useState('');
-  const [validationMessage,setvalidationMessage] = useState('');
+  const { accountType,token,setAuthData} = useAuth();
+  const [user, setUser] = useState({
+    email: '',
+    password: '',
+  });
 
-  const route = useRoute();
-const { accountType } = route.params || { accountType: 'default' };
-
-  async function login() {
-    if (email === '' || password === '') {
-      setvalidationMessage('required filled missing')
-      return;
-    }
-
+  const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth,email, password);
+      console.log(user,accountType);
+      const response = await axios.post(`http://172.16.121.186:3000/${accountType}/login`, user);
+      console.log('data recieved from res',response.data);
+      const userEmailResponse = response.data.email;
+      const uid = response.data.uid;
+      console.log('login',uid)
+      setUser({
+        email: '',
+        password: '',
+      });
+      setAuthData(accountType, userEmailResponse,uid); // Update the AuthContext values
+
+      alert('Logged in successfully!');
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
-      console.log("hello",accountType)
-      navigation.navigate(homeScreen,{accountType,email});
-      alert('Logged In Succesfully');
+      navigation.navigate(homeScreen);
+      console.log('login', accountType, userEmailResponse);
     } catch (error) {
-     setvalidationMessage(error.message);
+      console.error('Error logging in:', error);
+      if (error.response) {
+        console.log('Server responded with an error status:', error.response.status);
+        if (error.response.status === 401) {
+          alert('Invalid email or password. Please try again.');
+        } else {
+          alert('An error occurred while logging in. Please try again later.');
+        }
+      } else if (error.request) {
+        console.log('No response received from the server.');
+        alert('No response received from the server. Please try again later.');
+      } else {
+        console.log('Error setting up the request:', error.message);
+        alert('An unexpected error occurred. Please try again later.');
+      }
     }
-  }
+  };
+ 
+  
   return (
     <View style={styles.container} >
+      <Text>You are Signing In as a {accountType}</Text>
       <View style={styles.credentials}>
         <View style={styles.inputContainer}>
         <Ionicons name="mail" size={32} color="green" style={styles.icon}/>
-      <TextInput style={styles.input} placeholder="Email"  onChangeText={text =>setEmail(text)}/>
+      <TextInput style={styles.input} placeholder="Email" value={user.email} onChangeText={(text) =>setUser({ ...user,email:text })}/>
         </View>
       <View style={styles.inputContainer}>
       <Ionicons name="eye-off" size={32} color="#EE6B22" style={styles.icon} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry  onChangeText={text =>setPassword(text)}/>
+      <TextInput style={styles.input} placeholder="Password" value={user.password} onChangeText={(text) =>setUser({ ...user,password:text })}/>
       </View>
-      {<Text style={styles.error}>{validationMessage}</Text>}
+      {/* {<Text style={styles.error}>{errorMessage}</Text>} */}
       <Text style={styles.text}>Forgot password?</Text>
-      <TouchableOpacity style={styles.button} onPress={login}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
     </TouchableOpacity>
       </View>
@@ -72,25 +94,25 @@ const styles = StyleSheet.create({
 
   container : {
     flex:1,
-    paddingTop: 40,
-    padding:30,
+    paddingTop: '10%',
+    padding:'5%',
     justifyContent:'space-evenly',
-    backgroundColor : "#ECF6FC"
+    backgroundColor : "#e0f2f1"
   },
   credentials:{
 justifyContent:'space-evenly'
   },
   inputContainer: {
-    marginTop: 30,
+    marginTop: '10%',
     flexDirection: 'row',
-    height:70,
+    height:'15%',
     alignItems: 'center',
     backgroundColor:'white',
     borderRadius: 50,
-    paddingHorizontal: 10,
+    paddingHorizontal:'5%',
   },
   icon: {
-    marginRight: 10,
+    marginRight: '3%',
   },
   
 input:{
@@ -101,7 +123,7 @@ input:{
 },
 
   text:{
-    marginTop:'40',
+    marginTop:'4%',
     fontSize: 20,
     fontFamily: 'Roboto',
     fontWeight: 'light'
@@ -110,7 +132,7 @@ input:{
   marginTop: 20,
   borderRadius: 20,
   padding: 10,
-  backgroundColor: '#58C2FD',
+  backgroundColor: '#2ECC71',
   width: 150,
   alignSelf: 'center',
   elevation: 8, 

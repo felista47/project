@@ -4,32 +4,66 @@ import { useNavigation } from '@react-navigation/native';
 import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const ProfileScreen = () => {
-  let userId = '659a6d9253fb33f5d4909b90';
+  const { accountType,userEmail,uid,setAuthData} = useAuth();
   const navigation = useNavigation();
+  const [parent, setParent] = useState(null);
 
   const navigateToParent = () => {
     navigation.navigate('Parent'); 
-  };
+    console.log('profile',accountType,userEmail,uid)
 
-  const [parent, setParent] = useState(null);
+  };
+  const navigateToChild = () => {
+    navigation.navigate('Child'); 
+    console.log('profile',accountType,userEmail)
+
+  };
+  const navigateToFinance = () => {
+    navigation.navigate('Finance'); 
+
+  };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accountType, userEmail,uid]);
 
-  const fetchData = async () => {
+    const fetchData = async () => {
+    console.log('profileBefore fetch',accountType,userEmail,uid)
+
     try {
-      const response = await axios.get(`http://172.16.55.5:5000/parent/${userId}`);
+      const response = await axios.get(`http://192.168.43.6:3000/parent/${uid}`);
       const parentData = response.data;
 
-      setParent(parentData);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+      if (Array.isArray(parentData) && parentData.length === 0) {
+        setParent({}); // Set to an empty object for editing
+      } else {
+        setParent(parentData);
+      }    } catch (error) {
+      console.error('Error fetching parent profile data:', error);
     }
   };
+
+  const signOut = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      setAuthData(null,null, null);
+      navigation.navigate('WelcomeScreen');
+      console.log('Token set to null');
+    } catch (error) {
+      console.error('Error removing token:', error);
+    }
+  };
+  
+
+  
+
+
 
 
   if (!parent) {
@@ -47,8 +81,8 @@ const ProfileScreen = () => {
           </TouchableOpacity>
           {/* USER GREETINGS */}
    <View style={styles.userMinInfo}>
-      <Text style={styles.text}>{parent.personalInfo.name}</Text>
-      <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
+      <Text style={styles.text}>{userEmail}</Text>
+      {/* <Text>{parent.personalInfo.phoneNumber}</Text> */}
    </View>
 
       </View>
@@ -82,7 +116,7 @@ const ProfileScreen = () => {
       </View>
     </TouchableOpacity>
     
-    <TouchableOpacity style={styles.accItem}>
+    <TouchableOpacity style={styles.accItem}onPress={navigateToChild}>
       <View  style={styles.accItemIcon} >
         <FontAwesomeIcon icon={ faChildren }/>
       </View>
@@ -91,7 +125,15 @@ const ProfileScreen = () => {
         <Text>student details,edit details</Text>
       </View> 
     </TouchableOpacity>
-
+    <TouchableOpacity style={styles.accItem} onPress={navigateToFinance}>
+      <View  style={styles.accItemIcon} >
+        <FontAwesomeIcon icon={ faUser }/>
+      </View>
+      <View>
+        <Text>financial Information</Text>
+        <Text>Allowance details, set allowance limit</Text>
+      </View>
+    </TouchableOpacity>
     <TouchableOpacity style={styles.accItem}>
       <View  style={styles.accItemIcon} >
       <FontAwesomeIcon icon={ faBell }/>
@@ -124,7 +166,7 @@ const ProfileScreen = () => {
       </View>
     </TouchableOpacity>
 
-    <TouchableOpacity style={styles.accButtonRed}><Text>LogOut</Text></TouchableOpacity>
+    <TouchableOpacity style={styles.accButtonRed}onPress={signOut}><Text>LogOut</Text></TouchableOpacity>
  
   </ScrollView>
   );

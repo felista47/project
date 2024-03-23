@@ -4,11 +4,11 @@ import { faBell,faChartPie} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
 import ProductList from './ProductList';
+import { useAuth } from '../context/AuthContext'
 
 const VendorHomeScreen = ({navigation}) => {
 
-  let userId = '659a6c6e53fb33f5d4909b8d';
-
+  const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -23,31 +23,31 @@ const VendorHomeScreen = ({navigation}) => {
     }
   }, []); 
   
-  //fetch parent data function
-  const [parent, setParent] = useState(null);
+  //fetch vendor data function
+  const [vendor, setVendor] = useState(null);
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accountType, userEmail]);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.55.30:5000/parent/${userId}`,{ timeout: 5000 });
-      const parentData = response.data;
-      setParent(parentData); 
+      const response = await axios.get(`https://pocket-money.up.railway.app/vendor/${userEmail}`,{ timeout: 5000 });
+      const vendorData = response.data;
+      setVendor(vendorData); 
        } 
     catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
 
-  if (!parent) {
+  if (!vendor) {
     return <Text>Loading...</Text>;
   }
 
   return (
     <View style={styles.container}>
        <View style={styles.containerOne}>
-            <View style={styles.containerProfile}>
+            <TouchableOpacity style={styles.containerProfile}>
               {/* profile pic */}
               <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile')}>
                 <Image style={styles.image} source={require('../../assets/avatar.png')} />
@@ -55,9 +55,9 @@ const VendorHomeScreen = ({navigation}) => {
               {/* USER GREETINGS */}
               <View style={styles.userGreetings}>
                   <Text style={styles.greetingText}>{greeting},</Text>
-                  <Text style={styles.text}>{parent.personalInfo.name}</Text>
+                  <Text style={styles.text}>{userEmail}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
             <View style={styles.containerIcons}>
               <FontAwesomeIcon icon={ faBell } />
               <FontAwesomeIcon icon={ faChartPie } />

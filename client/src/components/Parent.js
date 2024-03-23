@@ -1,32 +1,35 @@
-import { StyleSheet, Text, View, TouchableOpacity,Image, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,Image, Button,TextInput, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
+import {Picker} from '@react-native-picker/picker'
 
 
 const Parent = () => {
-let userId = '659a6d9253fb33f5d4909b90';
-
-  const [parent, setParent] = useState(null);
+  const {uid} = useAuth();
+  const [parent, setParent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
     personalInfo: {
+      id:'',
       name: '',
-      contactInfo: {
-        phoneNumber: '',
-        emailAddress: '',
-      },
+      phoneNumber: '',
       homeAddress: '',
     },
     parentalDetails: {
       parentRelationship: '',
     },
-    children: [],
-    financialInformation: {
-      allowanceBalAmount: 0,
-      allowanceAmount: 0,
-      allowanceFrequency: 'Weekly',
+    uid:''
+  });
+  const [parentData, setParentData] = useState({
+    personalInfo: {
+      id: '',
+      name: '',
+      phoneNumber: '',
+      homeAddress: '',
+    },
+    parentalDetails: {
+      parentRelationship: '',
     },
   });
 
@@ -36,13 +39,13 @@ let userId = '659a6d9253fb33f5d4909b90';
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://192.168.100.45:5000/parent/${userId}`);
+      // console.log('user UID',uid)
+      const response = await axios.get(`http://192.168.43.6:3000/parent/${uid}`);
       const parentData = response.data;
-
-      setParent(parentData);
+        setParent(parentData);
       setEditedData(parentData);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Error fetching parent data:', error);
     }
   };
 
@@ -50,22 +53,41 @@ let userId = '659a6d9253fb33f5d4909b90';
     setIsEditing(true);
   };
 
-  const handleSavePress = async () => {
+  const handleUpdate = async () => {
+    const updatedParentData = {
+      ...parentData,
+    };
+    const requestData = {
+      data: updatedParentData,
+      uid: uid,
+
+    };
+    console.log(requestData)
     try {
-      // Make API request to update user data
-      await axios.patch(`http://192.168.100.45:5000/parent/${userId}`, editedData);
-
-      // Update local state with edited data
-      setParent(editedData);
-
-      // Exit edit mode
-      setIsEditing(false);
+      await axios.put(`http://192.168.43.6/parent/${uid}`, requestData);
+   
     } catch (error) {
-      console.error('Error updating user data:', error);
+      console.error('Error adding parent data:', error);
     }
   };
 
+  const handleSubmit = async () => {
+    const updatedParentData = {
+      ...parentData,
+    };
+    const requestData = {
+      data: updatedParentData,
+      uid: uid,
 
+    };
+    console.log(requestData)
+    try {
+      await axios.post(`http://192.168.43.6/parent/add-details`, requestData);
+   
+    } catch (error) {
+      console.error('Error adding parent data:', error);
+    }
+  };
   const handleCancelPress = () => {
     // Reset editedData to current parent data
     setEditedData(parent);
@@ -74,76 +96,145 @@ let userId = '659a6d9253fb33f5d4909b90';
     setIsEditing(false);
   };
 
+  const handleInputChange = (key, value) => {
+    setParentData({
+      ...parentData,
+      personalInfo: {
+        ...parentData.personalInfo,
+        [key]: value,
+      },
+    });
+  };
+
+  const handleRelationshipChange = (value) => {
+    setParentData({
+      ...parentData,
+      parentalDetails: {
+        parentRelationship: value,
+      },
+    });
+  };
+
+
+
   if (!parent) {
-    return <Text>Loading...</Text>;
-  }
+    <View style={styles.mainContainer}>
+    <TextInput
+      placeholder="ID"
+      onChangeText={(text) => handleInputChange('id', text)}
+      value={parentData.personalInfo.id}
+    />
+    <TextInput
+      placeholder="Name"
+      onChangeText={(text) => handleInputChange('name', text)}
+      value={parentData.personalInfo.name}
+    />
+    <TextInput
+      placeholder="Phone Number"
+      onChangeText={(text) => handleInputChange('phoneNumber', text)}
+      value={parentData.personalInfo.phoneNumber}
+    />
+    <TextInput
+      placeholder="Home Address"
+      onChangeText={(text) => handleInputChange('homeAddress', text)}
+      value={parentData.personalInfo.homeAddress}
+    />
+    <Picker
+      selectedValue={parentData.parentalDetails.parentRelationship}
+      onValueChange={(itemValue) => handleRelationshipChange(itemValue)}
+    >
+      <Picker.Item label="Select Relationship" value="" />
+      <Picker.Item label="Father" value="Father" />
+      <Picker.Item label="Mother" value="Mother" />
+      <Picker.Item label="Guardian" value="Guardian" />
+      {/* Add more relationship options as needed */}
+    </Picker>
+    <Button title="Submit" onPress={handleSubmit} />
+    </View>  }
+     else {
   return (
-    <ScrollView style={styles.parentContainer}>
-      <View style={styles.accItem}>
-        <Text>ID:</Text>
-        <Text> {parent.personalInfo.id}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Name: </Text>
-        <Text>{parent.personalInfo.name}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Phone Number:</Text>
-        <Text>{parent.personalInfo.contactInfo.phoneNumber}</Text>
-      </View>
-      <View style={styles.accItem}>
-        <Text>Email Address: </Text>
-        <Text>{parent.personalInfo.contactInfo.emailAddress}</Text>
-      </View>
-      <View style={styles.accItem}>   
-        <Text>Home Address:</Text>
-        <Text>{parent.personalInfo.homeAddress}</Text>
-      </View>
+    <ScrollView style={styles.parentContainer}>      
+            <View style={styles.accItem}>
+              <Text>ID:</Text>
+              <Text> {parent.userData.personalInfo.id}</Text>
+            </View>
+            <View style={styles.accItem}>
+              <Text>Name: </Text>
+              <Text>{parent.userData.personalInfo.name}</Text>
+            </View>
+            <View style={styles.accItem}>
+              <Text>Phone Number:</Text>
+              <Text>{parent.userData.personalInfo.phoneNumber}</Text>
+            </View>
+            <View style={styles.accItem}>
+              <Text>Parental Relationship:</Text>
+              <Text>{parent.userData.parentalDetails.parentRelationship}</Text>
+            </View>
+            <View style={styles.accItem}>   
+              <Text>Home Address:</Text>
+              <Text>{parent.userData.personalInfo.homeAddress}</Text>
+            </View>
 
-      {isEditing ? (
-        <View>
-          {/* Form for editing parent data */}
-          <TextInput
-            placeholder="Name"
-            value={editedData.personalInfo.name}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, name: text } })}
-          />
-          <TextInput
-            placeholder="Phone Number"
-            value={editedData.personalInfo.contactInfo.phoneNumber}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, phoneNumber: text } } })}
-          />
-          <TextInput
-            placeholder="Email Address"
-            value={editedData.personalInfo.contactInfo.emailAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, contactInfo: { ...editedData.personalInfo.contactInfo, emailAddress: text } } })}
-          />
-          <TextInput
-            placeholder="Home Address"
-            value={editedData.personalInfo.homeAddress}
-            onChangeText={(text) => setEditedData({ ...editedData, personalInfo: { ...editedData.personalInfo, homeAddress: text } })}
-          />
+            {isEditing ? (
+              <View>
+              <TextInput
+      placeholder="ID"
+      onChangeText={(text) => handleInputChange('id', text)}
+      value={parentData.personalInfo.id}
+    />
+    <TextInput
+      placeholder="Name"
+      onChangeText={(text) => handleInputChange('name', text)}
+      value={parentData.personalInfo.name}
+    />
+    <TextInput
+      placeholder="Phone Number"
+      onChangeText={(text) => handleInputChange('phoneNumber', text)}
+      value={parentData.personalInfo.phoneNumber}
+    />
+    <TextInput
+      placeholder="Home Address"
+      onChangeText={(text) => handleInputChange('homeAddress', text)}
+      value={parentData.personalInfo.homeAddress}
+    />
+    <Picker
+      selectedValue={parentData.parentalDetails.parentRelationship}
+      onValueChange={(itemValue) => handleRelationshipChange(itemValue)}
+    >
+      <Picker.Item label="Select Relationship" value="" />
+      <Picker.Item label="Father" value="Father" />
+      <Picker.Item label="Mother" value="Mother" />
+      <Picker.Item label="Guardian" value="Guardian" />
+      {/* Add more relationship options as needed */}
+    </Picker>
+                <TouchableOpacity onPress={handleUpdate}>
+                  <Text>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleCancelPress}>
+                  <Text>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.ButtonBlue}onPress={handleEditPress}>
+                <Text>Edit</Text>
+              </TouchableOpacity>
+            )}
+          
+       
 
-
-          <TouchableOpacity onPress={handleSavePress}>
-            <Text>Save</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCancelPress}>
-            <Text>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity onPress={handleEditPress}>
-          <Text>Edit</Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
-};
+            
+}};
 
 
 export default Parent;
 const styles = StyleSheet.create({
+  mainContainer:{
+    backgroundColor:'#ECF6FC',
+    paddingTop:30,
+    marginBottom:30,
+  },
   accItem:{
     width:'95%',
     elevation:2,
@@ -164,5 +255,19 @@ const styles = StyleSheet.create({
     marginLeft:20,
     marginRight:30,
   },
+  ButtonBlue:{
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#58C2FD',
+    width: 150,
+    alignSelf: 'center',
+    alignItems:'center',
+    elevation: 8, 
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
+},
 
 })
