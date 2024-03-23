@@ -16,16 +16,14 @@ const LoginScreen = ({ navigation}) => {
   const handleLogin = async () => {
     try {
       console.log(user,accountType);
-      const response = await axios.post(`http://172.16.121.186:3000/${accountType}/login`, user);
+      const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
       console.log('data recieved from res',response.data);
       const userEmailResponse = response.data.email;
-      const uid = response.data.uid;
-      console.log('login',uid)
       setUser({
         email: '',
         password: '',
       });
-      setAuthData(accountType, userEmailResponse,uid); // Update the AuthContext values
+      setAuthData(accountType, userEmailResponse); // Update the AuthContext values
 
       alert('Logged in successfully!');
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';

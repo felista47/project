@@ -19,11 +19,9 @@ const SignUpScreen  = ({ navigation }) => {
   const createAccount = async () => {
       try {
         console.log(user,accountType);
-        const response = await axios.post(`http://192.168.43.6:3000/${accountType}/register`, user);
-        console.log('data recived from response',response.data);
+        const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`, user);
+        console.log('data recived from signup response',response.data);
         const userEmailResponse = response.data.email;
-        const uid= response.data.uid;
-        await AsyncStorage.setItem('UID', uid);
         setUser({
           email: '',
           password: '',
@@ -31,16 +29,16 @@ const SignUpScreen  = ({ navigation }) => {
         setAuthData(accountType, userEmailResponse); // Update the AuthContext values
         alert('Registered  successfully!');
         navigation.navigate('SignIn',);
-        console.log('login', accountType, userEmailResponse);
+        console.log('signup', accountType, userEmailResponse);
       }
     catch (error) {
-      console.error('Error logging in:', error);
+      console.error('Error registering:', error);
       if (error.response) {
         console.log('Server responded with an error status:', error.response.status);
         if (error.response.status === 401) {
           alert('Invalid email or password. Please try again.');
         } else {
-          alert('An error occurred while logging in. Please try again later.');
+          alert('An error occurred while registering in. Please try again later.');
         }
       } else if (error.request) {
         console.log('No response received from the server.');
@@ -93,25 +91,25 @@ const styles = StyleSheet.create({
 
   container : {
     flex:1,
-    paddingTop: 40,
-    padding:30,
+    paddingTop: '10%',
+    padding:'5%',
     justifyContent:'space-evenly',
-    backgroundColor : "#ECF6FC"
+    backgroundColor : "#e0f2f1"
   },
   credentials:{
 justifyContent:'space-evenly'
   },
   inputContainer: {
-    marginTop: 30,
+    marginTop: '10%',
     flexDirection: 'row',
-    height:70,
+    height:'15%',
     alignItems: 'center',
     backgroundColor:'white',
     borderRadius: 50,
-    paddingHorizontal: 10,
+    paddingHorizontal:'5%',
   },
   icon: {
-    marginRight: 10,
+    marginRight: '3%',
   },
   
 input:{
@@ -122,7 +120,7 @@ input:{
 },
 
   text:{
-    marginTop:'40',
+    marginTop:'4%',
     fontSize: 20,
     fontFamily: 'Roboto',
     fontWeight: 'light'
@@ -131,7 +129,7 @@ input:{
   marginTop: 20,
   borderRadius: 20,
   padding: 10,
-  backgroundColor: '#58C2FD',
+  backgroundColor: '#2ECC71',
   width: 150,
   alignSelf: 'center',
   elevation: 8, 
@@ -162,10 +160,10 @@ buttonOne:{
  },
 
  dontHave:{
-  textAlign: 'center',
   fontFamily:'Roboto',
   fontWeight: 'bold',
-  fontSize: 24,
+fontSize: 32
+
  },
 socials:{
   margin :10,

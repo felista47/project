@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 
 const HomeScreen = ({navigation}) => {
-  const { accountType,userEmail,uid} = useAuth();
+  const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
   const [parent, setParent] = useState('');
 
@@ -26,12 +26,12 @@ const HomeScreen = ({navigation}) => {
 
   useEffect(() => {
     fetchData();
-  }, [accountType, userEmail,uid]);
+  }, [accountType, userEmail]);
   
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://172.16.121.186:3000/parent/${uid}`, { timeout: 5000 });
+      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
       const parentInfo = response.data;
 
       setParent(parentInfo)
@@ -41,24 +41,24 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
-  // const allowanceBalAmount = c?.financialInformation?.allowanceBalAmount; // Optional chaining
-
-useFocusEffect(
-  React.useCallback(() => {
-    fetchData();
-    return () => {
-      // Cleanup function if needed
-    };
-  }, [])
-);
-
-  if (!parent) {
-    return <Text>Loading...</Text>;
-  }
   const navigateToProfile = () => {
     navigation.navigate('Profile'); 
     console.log('profilefrom Home',accountType,userEmail)
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+      return () => {
+        // Cleanup function if needed
+      };
+    }, [])
+  );
+
+  if (!parent) {
+    return <Text>Loading...</Text>;
+  }
+ 
 
   return (
 <View style={styles.mainContainer}>
@@ -133,56 +133,57 @@ export default HomeScreen;
 const styles = StyleSheet.create({
 
   mainContainer:{
-    backgroundColor:'#ECF6FC',
+    backgroundColor:'#e0f2f1',
     alignItems:'center',
     justifyContent:'space-evenly',
   },
 
   containerOne: {
-    paddingTop:40,
+    paddingTop:'10%',
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
   },
   containerProfile:{
-    paddingLeft:20,
+    paddingLeft:'5%',
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 34,
+    height: 34,
     borderRadius: 999,
   },
   userGreetings: {
-    marginLeft: 20,
+    marginLeft: '5%',
   },
  
   text: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   containerIcons:{
     flexDirection:'row',
     justifyContent:'space-evenly',
-    width:'50%'
+    width:'40%'
   },
   containerTwo:{
     width:'80%',
     elevation: 7,
-    padding:10,
+    padding:'3%',
+    marginTop:'5%',
     alignItems:'center',
     backgroundColor:'white',
     height:100,
     borderRadius:10,
   },
   containerTwoText:{
-    fontSize:30,
+    fontSize:20,
   },
   containerThree:{
     width:'90%',
-    marginTop: 15,
+    marginTop: '5%',
     flexDirection:'row',
     justifyContent:'space-evenly',    
   },
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
   ButtonBlue:{
     borderRadius: 20,
     padding: 10,
-    backgroundColor: '#58C2FD',
+    backgroundColor: '#2ECC71',
     width: 150,
     alignSelf: 'center',
     alignItems:'center',
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     width:'95%',
     flexDirection:'row',
     justifyContent:'space-between',
-    marginTop:30,
+    marginTop:'10%',
   },
   containerFourT1:{
     fontSize:20,
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
   },
   containerFive:{
     width:'99%',
-    marginTop:40,
+    marginTop:'5%',
     flexDirection:'column',
     alignContent:'center',
   },
