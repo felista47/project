@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor:'#e0f2f1',
     alignItems:'center',
     justifyContent:'space-evenly',
+    flex: 1,
   },
 
   containerOne: {

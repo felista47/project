@@ -1,273 +1,196 @@
-import { StyleSheet, Text, View, TouchableOpacity,Image, Button,TextInput, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View,Image, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext'
-import {Picker} from '@react-native-picker/picker'
-
+import { useAuth } from '../context/AuthContext';
+import { Picker } from '@react-native-picker/picker';
+import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 
 const Parent = () => {
-  const { accountType,userEmail,setAuthData} = useAuth();
-  const [parent, setParent] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
-    personalInfo: {
-      id:'',
-      name: '',
-      phoneNumber: '',
-      homeAddress: '',
-    },
-    parentalDetails: {
-      parentRelationship: '',
-    },
-    uid:''
-  });
-  const [parentData, setParentData] = useState({
-    personalInfo: {
-      id: '',
-      name: '',
-      phoneNumber: '',
-      homeAddress: '',
-    },
-    parentalDetails: {
-      parentRelationship: '',
-    },
-  });
+  const { userEmail } = useAuth();
+  const [parentData, setParentData] = useState(null);
+  const [editable, setEditable] = useState(false);
 
   useEffect(() => {
     fetchData();
-  }, [accountType, userEmail,]);
+  }, [userEmail]);
 
   const fetchData = async () => {
     try {
-      // console.log('user UID',uid)
       const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
-      const parentData = response.data;
-        setParent(parentData);
-      setEditedData(parentData);
+      const parent = response.data;
+      setParentData(parent);
+      console.log(parentData)
     } catch (error) {
       console.error('Error fetching parent data:', error);
     }
   };
 
-  const handleEditPress = () => {
-    setIsEditing(true);
-  };
-
   const handleUpdate = async () => {
-    const updatedParentData = {
-      ...parentData,
-    };
-    const requestData = {
-      data: updatedParentData,
-      uid: uid,
-
-    };
-    console.log(requestData)
     try {
-      await axios.put(`http://192.168.43.6/parent/${uid}`, requestData);
-   
+      await axios.put(`http://192.168.43.6/parent/${parentData.uid}`, { data: parentData });
+      setEditable(false); // After update, switch back to view mode
     } catch (error) {
-      console.error('Error adding parent data:', error);
+      console.error('Error updating parent data:', error);
     }
   };
 
-  const handleSubmit = async () => {
-    const updatedParentData = {
-      ...parentData,
-    };
-    const requestData = {
-      data: updatedParentData,
-      uid: uid,
-
-    };
-    console.log(requestData)
-    try {
-      await axios.post(`http://192.168.43.6/parent/add-details`, requestData);
-   
-    } catch (error) {
-      console.error('Error adding parent data:', error);
-    }
+  const toggleEdit = () => {
+    setEditable(!editable);
   };
+
   const handleCancelPress = () => {
-    // Reset editedData to current parent data
-    setEditedData(parent);
-
-    // Exit edit mode
-    setIsEditing(false);
+    setParentData(parentData); // Reset to original data
+    setEditable(false);
   };
 
-  const handleInputChange = (key, value) => {
-    setParentData({
-      ...parentData,
+  const handleInputChange = (field, value) => {
+    setParentData(prevParent => ({
+      ...prevParent,
       personalInfo: {
-        ...parentData.personalInfo,
-        [key]: value,
+        ...prevParent.personalInfo,
+        [field]: value,
       },
-    });
+    }));
   };
 
-  const handleRelationshipChange = (value) => {
-    setParentData({
-      ...parentData,
-      parentalDetails: {
-        parentRelationship: value,
-      },
-    });
+  const renderTextInput = (label, value, field,iconName) => {
+    return (
+      <View style={styles.inputContainer}>
+           {iconName && (
+      <FontAwesomeIcon  
+        name={iconName}
+        size={24} 
+        color="black" 
+        style={styles.icon}
+      />
+    )}
+        <Text>{label}</Text>
+        <TextInput
+          value={value}
+          onChangeText={(text) => handleInputChange(field, text)}
+          editable={editable}
+          style={styles.textInput}
+        />
+      </View>
+    );
   };
 
 
+  if (!parentData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
-  if (!parent) {
-    <View style={styles.mainContainer}>
-    <TextInput
-      placeholder="ID"
-      onChangeText={(text) => handleInputChange('id', text)}
-      value={parentData.personalInfo.id}
-    />
-    <TextInput
-      placeholder="Name"
-      onChangeText={(text) => handleInputChange('name', text)}
-      value={parentData.personalInfo.name}
-    />
-    <TextInput
-      placeholder="Phone Number"
-      onChangeText={(text) => handleInputChange('phoneNumber', text)}
-      value={parentData.personalInfo.phoneNumber}
-    />
-    <TextInput
-      placeholder="Home Address"
-      onChangeText={(text) => handleInputChange('homeAddress', text)}
-      value={parentData.personalInfo.homeAddress}
-    />
-    <Picker
-      selectedValue={parentData.parentalDetails.parentRelationship}
-      onValueChange={(itemValue) => handleRelationshipChange(itemValue)}
-    >
-      <Picker.Item label="Select Relationship" value="" />
-      <Picker.Item label="Father" value="Father" />
-      <Picker.Item label="Mother" value="Mother" />
-      <Picker.Item label="Guardian" value="Guardian" />
-      {/* Add more relationship options as needed */}
-    </Picker>
-    <Button title="Submit" onPress={handleSubmit} />
-    </View>  }
-     else {
   return (
-    <ScrollView style={styles.parentContainer}>      
-            <View style={styles.accItem}>
-              <Text>ID:</Text>
-              <Text> {parent.userData.personalInfo.id}</Text>
-            </View>
-            <View style={styles.accItem}>
-              <Text>Name: </Text>
-              <Text>{parent.userData.personalInfo.name}</Text>
-            </View>
-            <View style={styles.accItem}>
-              <Text>Phone Number:</Text>
-              <Text>{parent.userData.personalInfo.phoneNumber}</Text>
-            </View>
-            <View style={styles.accItem}>
-              <Text>Parental Relationship:</Text>
-              <Text>{parent.userData.parentalDetails.parentRelationship}</Text>
-            </View>
-            <View style={styles.accItem}>   
-              <Text>Home Address:</Text>
-              <Text>{parent.userData.personalInfo.homeAddress}</Text>
-            </View>
-
-            {isEditing ? (
-              <View>
-              <TextInput
-      placeholder="ID"
-      onChangeText={(text) => handleInputChange('id', text)}
-      value={parentData.personalInfo.id}
-    />
-    <TextInput
-      placeholder="Name"
-      onChangeText={(text) => handleInputChange('name', text)}
-      value={parentData.personalInfo.name}
-    />
-    <TextInput
-      placeholder="Phone Number"
-      onChangeText={(text) => handleInputChange('phoneNumber', text)}
-      value={parentData.personalInfo.phoneNumber}
-    />
-    <TextInput
-      placeholder="Home Address"
-      onChangeText={(text) => handleInputChange('homeAddress', text)}
-      value={parentData.personalInfo.homeAddress}
-    />
-    <Picker
-      selectedValue={parentData.parentalDetails.parentRelationship}
-      onValueChange={(itemValue) => handleRelationshipChange(itemValue)}
-    >
-      <Picker.Item label="Select Relationship" value="" />
-      <Picker.Item label="Father" value="Father" />
-      <Picker.Item label="Mother" value="Mother" />
-      <Picker.Item label="Guardian" value="Guardian" />
-      {/* Add more relationship options as needed */}
-    </Picker>
-                <TouchableOpacity onPress={handleUpdate}>
-                  <Text>Save</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleCancelPress}>
-                  <Text>Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity style={styles.ButtonBlue}onPress={handleEditPress}>
-                <Text>Edit</Text>
-              </TouchableOpacity>
-            )}
-          
-       
-
-    </ScrollView>
-  );
-            
-}};
-
-
-export default Parent;
+<View style={styles.mainContainer}>
+  <View style={styles.parentProfile}>
+      <Image style={styles.image} source={require('../../assets/avatar.png')} />
+      <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
+  </View>
+  <View style={styles.parentData}>
+  {renderTextInput('ID', parentData.personalInfo.id, 'id',faUser)}
+  {renderTextInput('Name', parentData.personalInfo.name, 'name')}
+  {renderTextInput('Phone Number', parentData.personalInfo.phoneNumber, 'phoneNumber')}
+  {renderTextInput('Home Address', parentData.personalInfo.homeAddress, 'homeAddress')}
+  <Picker
+    selectedValue={parentData.parentalDetails.parentRelationship}
+    onValueChange={(itemValue) => handleInputChange(itemValue)}
+  >
+    <Picker.Item label="Select Relationship" value="" />
+    <Picker.Item label="Father" value="Father" />
+    <Picker.Item label="Mother" value="Mother" />
+    <Picker.Item label="Guardian" value="Guardian" />
+  </Picker>
+  </View>
+  <View style={styles.buttonContainer}>
+    <TouchableOpacity style={styles.button} onPress={editable ? handleUpdate : toggleEdit}>
+      <Text style={{ color: 'white', textAlign: 'center' }}>{editable ? 'Save' : 'Edit'}</Text>
+    </TouchableOpacity>
+    {editable && (
+      <TouchableOpacity style={styles.buttonOne} onPress={handleCancelPress}>
+        <Text  style={{ color: 'white', textAlign: 'center' }}>Cancel</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+</View>
+)}
 const styles = StyleSheet.create({
-  mainContainer:{
-    backgroundColor:'#ECF6FC',
-    paddingTop:30,
-    marginBottom:30,
+  mainContainer: {
+    padding: '5%',
+    backgroundColor: "#e0f2f1",
+    flex: 1,
   },
-  accItem:{
-    width:'95%',
-    elevation:2,
-    height:100,
-    padding:20,
-    marginBottom:15,
-    borderRadius:10,
-    backgroundColor:'white',
-    alignSelf:'center',
+  parentProfile:{
+    padding:'5%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  accItemIcon:{
-    backgroundColor:'#58C2FD',
-    alignItems:'center',
-    paddingTop:10,
-    width:40,
-    height:40,
-    borderRadius:999,
-    marginLeft:20,
-    marginRight:30,
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 999,
   },
-  ButtonBlue:{
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editImage:{
+    padding:'2%',
+color:'#58C2FA',
+fontWeight:'bold'
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribute buttons evenly
+    marginBottom: 20, // Add some bottom margin
+  },
+  inputContainer: {
+    marginTop: '10%',
+    flexDirection: 'row',
+    height: '10%',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: '5%',
+  },
+  button: {
     borderRadius: 20,
     padding: 10,
-    backgroundColor: '#58C2FD',
+    backgroundColor: '#2ECC71',
     width: 150,
     alignSelf: 'center',
-    alignItems:'center',
+    elevation: 8,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
+  },
+  buttonOne:{
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#EE6B22',
+    width: 150,
+    alignSelf: 'center',
     elevation: 8, 
     shadowOffset: {
       width: 0,
       height: 3,
     },
     shadowRadius: 6,
-},
+  },
+  textInput: {
+   
+    color:'black',
+  
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+});
 
-})
+export default Parent;
