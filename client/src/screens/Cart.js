@@ -1,100 +1,140 @@
-import { StyleSheet, Text, View,Image, TouchableOpacity, Pressable} from 'react-native'
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { useSelector, useDispatch } from 'react-redux';
 import  {Ionicons,Feather} from '@expo/vector-icons';
-import { useSelector,useDispatch } from 'react-redux';
-import {decrementQuantity, incrementQuantity, removeFromCart } from "../reduxStore/reducers/CartReducer";
-import { useNavigation } from '@react-navigation/native';
+import { decrementQuantity, incrementQuantity, removeFromCart ,clearCart} from "../reduxStore/reducers/CartReducer";
+import { useNavigation } from '@react-navigation/native'; // Moved this import here
+import axios from 'axios';
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart.cart);
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation(); // Now using useNavigation directly
+  const [showPayment, setShowPayment] = useState(false);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [studentID, setStudentID] = useState('');
+  const [customer, setCustomer] = useState({
+    BalAmount: 0
+  });
 
-  const totalPrice = cart.reduce((acc, item) => acc + item.productAmount * item.quantity, 0);
-  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+  useEffect(() => {
+    const price = cart.reduce((acc, item) => acc + item.productAmount * item.quantity, 0);
+    setTotalPrice(price);
+    setCustomer({ BalAmount: price.toFixed(2) });
+  }, [cart]);
 
   const removeItemFromCart = (item) => {
     dispatch(removeFromCart(item));
-    console.log("Cart Length:", cart);
-
   };
 
-const increaseQuantity = (item) => {
+  const increaseQuantity = (item) => {
     dispatch(incrementQuantity(item));
   }
 
-const decreaseQuantity = (item) => {
-    if(item.quantity == 1){
+  const decreaseQuantity = (item) => {
+    if (item.quantity === 1) {
       dispatch(removeFromCart(item));
-    }else{
+    } else {
       dispatch(decrementQuantity(item));
     }
   }
-  const navigateToProducts= () => {
-    navigation.navigate('VendorHomeScreen'); 
-  };
-  const navigateToPay= () => {
-    navigation.navigate('MakePayment'); 
-  };
-  return (
-  <View style={styles.containerMain}>
-    <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>Cart Items:</Text>
-    {cart.map((item,) => (
-      <View key={item._id} style={styles.productContainer}>
-         <Image source={{ uri: item.productImage }} style={styles.image} />
-         <View>
-            <Text>{item.productName}</Text>
-         </View>
-         <Text>Ksh: {item.productAmount}</Text>
-         <TouchableOpacity style={styles.buttonCart} onPress={() => increaseQuantity(item)}>
-            <Ionicons name="add" size={24} color='black'></Ionicons>
-         </TouchableOpacity>
-         <Text>{item.quantity}</Text>
-         <TouchableOpacity style={styles.buttonCart} onPress={() =>decreaseQuantity(item)}>
-            <Feather name="minus" size={24} color="black" />          
-        </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonCart} onPress={() => removeItemFromCart(item)}>
-           <Ionicons name="trash" size={24} color='black'></Ionicons>
-          </TouchableOpacity>
 
-      </View>
-        ))}
-        <View style={styles.productContainer}>
-          <Text>{totalItems}</Text>
-          <Text>KSH.{totalPrice.toFixed(2)}</Text>
+  const navigateToProducts = () => {
+    navigation.navigate('VendorHomeScreen');
+  };
+
+  const togglePayment = () => {
+    setShowPayment(!showPayment);
+  };
+
+  const checkout = async () => {
+    try {
+      const response = await axios.put(`https://pocket-money.up.railway.app/student/checkout/${studentID}`, customer);
+      console.log('Data after update:', response.data);
+      dispatch(clearCart());
+      alert('Payment made successfully!');
+      setShowPayment(false);
+      navigation.navigate('VendorHomeScreen');
+    } catch (error) {
+      console.error('Error updating student data:', error);
+    }
+  };
+
+  return (
+    <View style={styles.containerMain}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>Cart Items:</Text>
+      {cart.map((item) => (
+        <View key={item._id} style={styles.productContainer}>
+          <Image source={{ uri: item.productImage }} style={styles.image} />
+          <View>
+            <Text>{item.productName}</Text>
+          </View>
+          <Text>Ksh: {item.productAmount}</Text>
+          <TouchableOpacity style={styles.buttonCart} onPress={() => increaseQuantity(item)}>
+            <Ionicons name="add" size={24} color='black'></Ionicons>
+          </TouchableOpacity>
+          <Text>{item.quantity}</Text>
+          <TouchableOpacity style={styles.buttonCart} onPress={() => decreaseQuantity(item)}>
+            <Feather name="minus" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonCart} onPress={() => removeItemFromCart(item)}>
+            <Ionicons name="trash" size={24} color='black'></Ionicons>
+          </TouchableOpacity>
         </View>
-      <View style={styles.containerSell}>
-        <Pressable style={styles.buttonRed} onPress={()=>navigateToPay()}><Text>Make Payment</Text></Pressable>
-        <Pressable style={styles.buttonGreen} onPress={()=>navigateToProducts()}><Text>Continue Selling</Text></Pressable>
+      ))}
+      <View style={styles.productContainer}>
+        <Text>Total Items: {cart.length}</Text>
+        <Text>Total Price: KSH.{totalPrice.toFixed(2)}</Text>
       </View>
-      
+      <View style={styles.containerSell}>
+        {!showPayment ? (
+          <Pressable style={styles.buttonRed} onPress={togglePayment}>
+            <Text>Make Payment</Text>
+          </Pressable>
+        ) : (
+          <View>
+            <TextInput
+              style={styles.input}
+              placeholder="Student ID"
+              keyboardType="numeric"
+              value={studentID}
+              onChangeText={setStudentID}
+            />
+            <TouchableOpacity style={styles.buttonOne} onPress={checkout}>
+              <Text>PAY</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
+          <Text>Continue Selling</Text>
+        </Pressable>
+      </View>
     </View>
-  )
+  );
 }
 
-export default Cart
+export default Cart;
 
 const styles = StyleSheet.create({
-containerMain:{
-  backgroundColor:'#ECF6FC',
-  alignItems:'center',
-  justifyContent:'space-evenly',
-
-},
-productContainer:{
-    width:'95%',
-    elevation:8,
-    height:100,
-    padding:10,
-    marginBottom:15,
-    borderRadius:10,
-    flexDirection:'row',
-    justifyContent:'space-between',
-    backgroundColor:'white',
-    alignSelf:'center',
-    alignItems:'center',
-},
-buttonRed:{
+  containerMain: {
+    backgroundColor: '#ECF6FC',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+  },
+  productContainer: {
+    width: '95%',
+    elevation: 8,
+    height: 100,
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  buttonRed:{
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#EE6B22',
@@ -133,5 +173,33 @@ image: {
   height: 100,
   borderRadius: 999,
   marginBottom: 16,
+},
+// text: {
+//   fontSize: 20,
+//   fontWeight: 'bold',
+// },
+input: {
+  borderWidth: 1,
+  borderColor: 'gray',
+  borderRadius: 5,
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+  marginTop: 10,
+  width: '80%',
+},
+buttonOne: {
+  borderRadius: 20,
+  padding: 10,
+  backgroundColor: '#EE6B22',
+  width: 150,
+  alignSelf: 'center',
+  alignItems: 'center',
+  elevation: 8,
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+  shadowRadius: 6,
+  marginTop: 20,
 },
 })

@@ -8,7 +8,6 @@ import Parent from '../components/Parent';
 import AddProduct from '../screens/AddProduct';
 import Cart from '../screens/Cart';
 import ProductList from '../screens/ProductList';
-import MakePayment from '../components/MakePayment';
 import LoginScreen from '../screens/LoginScreen';
 import VendorHomeScreen from '../screens/VendorHomeScreen';
 import SignUp from '../screens/SignUp';
@@ -34,7 +33,6 @@ const MainNavigator = () => {
       <Stack.Screen name="AddProduct" component={AddProduct} options={{ headerShown: false}} />
       <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false}} />  
       <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false}} />
-      <Stack.Screen name="MakePayment" component={MakePayment} options={{ headerShown: false}} />
 
     </Stack.Navigator>
   );
