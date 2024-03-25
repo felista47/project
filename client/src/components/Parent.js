@@ -30,7 +30,9 @@ const Parent = () => {
     try {
       const response =await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, parentData);
       setEditable(false);
-      console.log('data after update',response.data) // After update, switch back to view mode
+      const parent =response.data
+      setParentData(parent);
+      console.log('data after update',response.data)
     } catch (error) {
       console.error('Error updating parent data:', error);
     }

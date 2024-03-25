@@ -1,190 +1,185 @@
-import { StyleSheet, Text, View, TouchableOpacity,TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
 
 
 const Child = () => {
-    const { uid} = useAuth();
-    const [isEditingChild, setIsEditingChild] = useState(false);
-    const [editingChild, setEditingChild] = useState(null);
-    const [children, setChildren] = useState([]);
-    const [newChild, setNewChild] = useState({
-        Name: '',
-        Grade: '',
-        studentID: '',
-        frequency: '',
-        limit: 0,
-        balance: 0
-    });
+ const {userEmail} = useAuth();
+ const[studentData, setStudentData] =useState(null)
+ const [editable, setEditable] = useState(false);
 
-    useEffect(() => {
+ useEffect(() => {
       fetchData();
-    }, []);
+    }, [userEmail]);
 
     const fetchData = async () => {
       try {
-        console.log(uid)
-        const response = await axios.get(`http://172.16.120.106:3000/student//${uid}`);
-        const parentData = response.data;
-        setChildren(parentData);
-        console.error('children data:',parentData);
+        const response =await axios.get(`https://pocket-money.up.railway.app/student/parent/${userEmail}`);
+        const student = response.data;
+        setStudentData(student);
+        console.log('children data:',studentData);
       } catch (error) {
         console.error('Error fetching parents children data:', error);
       }
     };
 
-    const handleInputChange = (name, value) => {
-      setNewChild({ ...newChild, [name]: value }); 
+    const toggleEdit = () => {
+      setEditable(!editable);
     };
-    
-
-    const handleSubmitNewChild = async () => {
-
-      try{  
-        const requestData = {
-          data: newChild,
-          uid: uid,
-    
-        };
-          console.log('child',requestData);
-       
-        const response = await axios.post(`http://172.16.120.106:3000/student`,requestData);
-    
-        if (response.status === 200) {
-          console.log('New child added successfully!');
-          const parentData = response.data;
-          setChildren(parentData);
-          setNewChild({
-            Name: '',
-            Grade: '',
-            studentID:'',
-            frequency: '',
-            limit: 0,
-            balance: 0
-        });
-         } else {
-          console.error('Error adding child:', response.data);
-     }
-      } catch (error) {
-        console.error('Error adding child:', error);
-      }
-    };
-
-    const handleEditChild = (child) => {
-      setIsEditingChild(true);
-      setEditingChild(child);
-    };
-    const handleDeletePress = async () => {
+  
+    const handleUpdate = async (studentID) => {
       try {
-        const response = await axios.delete(`http://172.16.120.106:3000/student/${uid}`);
-        const parentData = response.data;
-        setChildren(parentData);
-        console.error('children data:',parentData);
+        const response = await axios.put(`https://pocket-money.up.railway.app/student/${studentID}`, studentData);
+        setEditable(false);
+        console.log('Data after update:', response.data);
       } catch (error) {
-        console.error('Error fetching parents children data:', error);
+        console.error('Error updating student data:', error);
       }
     };
+    
+    const handleCancelPress = () => {
+      setStudentData(studentData); // Reset to original data
+      setEditable(false);
+    };
+    const handleInputChange = (field, value) => {
+      let updatedStudentData = [...studentData];
+      // Assuming each student has an _id field
+      const studentIndex = updatedStudentData.findIndex(student => student.studentID === studentData[0].studentID);
+      // If the studentIndex is found
+      if (studentIndex !== -1) {
+        updatedStudentData[studentIndex] = {
+          ...updatedStudentData[studentIndex],
+          [field]: value,
+        };
+        setStudentData(updatedStudentData);
+      }
+    };
+  
+    const renderTextInput = (label, value, field) => {
+      return (
+        <View style={styles.inputContainer}>
+          <Text>{label}</Text>
+            <TextInput
+              value={value}
+              onChangeText={(text) => handleInputChange(field,text)}
+              editable={editable}
+              style={styles.textInput}
+            />
+        </View>
+      );
+    };
+    if (!studentData) {
+      return (
+        <View style={styles.loadingContainer}>
+          <Text>Loading...</Text>
+        </View>
+      );
+    }
 
  return (
-    <ScrollView style={styles.accItem}>
-        {children.length > 0 ? (
-           <>
-        {children.map((child, index) => (
-          <TouchableOpacity key={index}>
-            <Text style={styles.accItem}>Child {index + 1}</Text>
-            <Text style={styles.accItem}>Child Full Name: {child.Name}</Text>
-            <Text style={styles.accItem}>Grade/Class: {child.Grade}</Text>
-            <Text style={styles.accItem}>Student ID: {child.studentID}</Text>
-            <View>
-            <TouchableOpacity onPress={() => handleDeletePress(child._id)}><Text>Delete</Text></TouchableOpacity>
-            {isEditingChild !== child._id && ( // Check if not already editing this child
-              <TouchableOpacity onPress={() => handleEditChild(child)}>
-                <Text>Edit</Text>
-              </TouchableOpacity>)}
-            </View>
-          </TouchableOpacity>
-          ))}
-          {isEditingChild && (
-            <></>
-              // <>
-              // <TextInput
-              //   editable={true}
-              //   placeholder="Full Name"
-              //   value={editingChild.childFullName}
-              //   onChangeText={(text) => handleInputChange('Name', text)}
-              // />
-              // <TextInput
-              //   placeholder="Grade"
-              //   value={editingChild.gradeClass}
-              //   onChangeText={(text) => handleInputChange('Grade', text)}
-              // />
-             
+<View style={styles.mainContainer}>
+  <View style={styles.studentProfile}>
+      <Image style={styles.image} source={require('../../assets/avatar.png')} />
+      <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
+  </View>
+  <ScrollView style={styles.studentData}>
+      {renderTextInput('ID:', studentData[0].studentID, 'studentID')}
+      {renderTextInput('Name', studentData[0].childFullName, 'childFullName')}
+      {renderTextInput('Grade', studentData[0].gradeClass, 'gradeClass')}
+      {renderTextInput('Balance', studentData[0].BalAmount.toString(), 'BalAmount')}
+      {renderTextInput('Allowance Limit', studentData[0].AllowanceLimit.toString(), 'AllowanceLimit')}
+      {renderTextInput('Allowance Frequency', studentData[0].Frequency, 'Frequency')}
+</ScrollView>
 
-              // <TouchableOpacity onPress={() => handleSubmitNewChild(editingChild)}>
-              //   <Text>Save Changes</Text>
-              // </TouchableOpacity>
-              // <TouchableOpacity onPress={() => setIsEditingChild(false)}>
-              //   <Text>Cancel</Text>
-              // </TouchableOpacity>
-              // </>
-          )}
+  <View style={styles.buttonContainer}>
+  <TouchableOpacity style={styles.button} onPress={editable ? () => handleUpdate(studentData[0].studentID) : toggleEdit}>
+      <Text style={{ color: 'white', textAlign: 'center' }}>{editable ? 'Save' : 'Edit'}</Text>
+    </TouchableOpacity>
+    {editable && (
+      <TouchableOpacity style={styles.buttonOne} onPress={handleCancelPress}>
+        <Text  style={{ color: 'white', textAlign: 'center' }}>Cancel</Text>
+      </TouchableOpacity>
+    )}
+  </View>
 
-           </>
-        ) : (
-           <>
-           {/* Form for adding a child */}
-             <TextInput placeholder="Full Name" value={newChild.Name} onChangeText={(text) => handleInputChange('Name', text)}/>
-             <TextInput placeholder="Grade/Class" value={newChild.Grade} onChangeText={(text) => handleInputChange('Grade', text)}/>
-             <TextInput placeholder="StudentID" value={newChild.studentID} onChangeText={(text) => handleInputChange('studentID', text)}/>
-             <TextInput placeholder="Allowance frequency" value={newChild.frequency} onChangeText={(text) => handleInputChange('frequency', text)}/>
-             <TextInput placeholder="allawonce limit"
-               keyboardType="numeric"
-               value={newChild.limit}
-               onChangeText={(text) => handleInputChange('limit',text )}/>
-             <TouchableOpacity onPress={handleSubmitNewChild}><Text>Add Child</Text></TouchableOpacity>
-           </>
-        )}
-
-    </ScrollView>
+ </View>
   );
 };
 
 export default Child;
+
 const styles = StyleSheet.create({
-  accItem:{
-    width:'95%',
-    elevation:2,
-    height:100,
-    padding:20,
-    marginBottom:15,
-    borderRadius:10,
-    backgroundColor:'white',
-    alignSelf:'center',
+  mainContainer: {
+    padding: '5%',
+    backgroundColor: "#e0f2f1",
+    flex: 1,
   },
-  accItemIcon:{
-    backgroundColor:'#58C2FD',
-    alignItems:'center',
-    paddingTop:10,
-    width:40,
-    height:40,
-    borderRadius:999,
-    marginLeft:20,
-    marginRight:30,
+  studentProfile:{
+    padding:'5%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  ButtonBlue:{
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 999,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editImage:{
+    padding:'2%',
+color:'#58C2FA',
+fontWeight:'bold'
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Distribute buttons evenly
+    marginBottom: 20, // Add some bottom margin
+  },
+  inputContainer: {
+    marginTop: '10%',
+    flexDirection: 'row',
+    height: '10%',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: '5%',
+  },
+  button: {
     borderRadius: 20,
     padding: 10,
-    backgroundColor: '#58C2FD',
+    backgroundColor: '#2ECC71',
     width: 150,
     alignSelf: 'center',
-    alignItems:'center',
+    elevation: 8,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowRadius: 6,
+  },
+  buttonOne:{
+    borderRadius: 20,
+    padding: 10,
+    backgroundColor: '#EE6B22',
+    width: 150,
+    alignSelf: 'center',
     elevation: 8, 
     shadowOffset: {
       width: 0,
       height: 3,
     },
     shadowRadius: 6,
-},
-
-})
+  },
+  textInput: {
+   
+    color:'black',
+  
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+});
