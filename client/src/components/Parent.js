@@ -28,8 +28,9 @@ const Parent = () => {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://192.168.43.6/parent/${parentData.uid}`, { data: parentData });
-      setEditable(false); // After update, switch back to view mode
+      const response =await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, parentData);
+      setEditable(false);
+      console.log('data after update',response.data) // After update, switch back to view mode
     } catch (error) {
       console.error('Error updating parent data:', error);
     }
@@ -45,36 +46,44 @@ const Parent = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setParentData(prevParent => ({
-      ...prevParent,
-      personalInfo: {
-        ...prevParent.personalInfo,
-        [field]: value,
-      },
-    }));
+    let updatedParentData = { ...parentData };
+  
+    // Check if the field belongs to personalInfo or parentalDetails
+    if (field in updatedParentData.personalInfo) {
+      updatedParentData = {
+        ...updatedParentData,
+        personalInfo: {
+          ...updatedParentData.personalInfo,
+          [field]: value,
+        },
+      };
+    } else if (field in updatedParentData.parentalDetails) {
+      updatedParentData = {
+        ...updatedParentData,
+        parentalDetails: {
+          ...updatedParentData.parentalDetails,
+          [field]: value,
+        },
+      };
+    }
+    setParentData(updatedParentData);
   };
+  
 
-  const renderTextInput = (label, value, field,iconName) => {
+  const renderTextInput = (label, value, field) => {
     return (
       <View style={styles.inputContainer}>
-           {iconName && (
-      <FontAwesomeIcon  
-        name={iconName}
-        size={24} 
-        color="black" 
-        style={styles.icon}
-      />
-    )}
         <Text>{label}</Text>
-        <TextInput
-          value={value}
-          onChangeText={(text) => handleInputChange(field, text)}
-          editable={editable}
-          style={styles.textInput}
-        />
+          <TextInput
+            value={value}
+            onChangeText={(text) => handleInputChange(field,text)}
+            editable={editable}
+            style={styles.textInput}
+          />
       </View>
     );
   };
+  
 
 
   if (!parentData) {
@@ -92,19 +101,11 @@ const Parent = () => {
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
   </View>
   <View style={styles.parentData}>
-  {renderTextInput('ID', parentData.personalInfo.id, 'id',faUser)}
-  {renderTextInput('Name', parentData.personalInfo.name, 'name')}
-  {renderTextInput('Phone Number', parentData.personalInfo.phoneNumber, 'phoneNumber')}
-  {renderTextInput('Home Address', parentData.personalInfo.homeAddress, 'homeAddress')}
-  <Picker
-    selectedValue={parentData.parentalDetails.parentRelationship}
-    onValueChange={(itemValue) => handleInputChange(itemValue)}
-  >
-    <Picker.Item label="Select Relationship" value="" />
-    <Picker.Item label="Father" value="Father" />
-    <Picker.Item label="Mother" value="Mother" />
-    <Picker.Item label="Guardian" value="Guardian" />
-  </Picker>
+    {renderTextInput('ID', parentData.personalInfo.id, 'id')}
+    {renderTextInput('Name', parentData.personalInfo.name, 'name')}
+    {renderTextInput('Phone Number', parentData.personalInfo.phoneNumber, 'phoneNumber')}
+    {renderTextInput('Home Address', parentData.personalInfo.homeAddress, 'homeAddress')}
+    {renderTextInput('Parent Relationship', parentData.parentalDetails.parentRelationship, 'parentRelationship')}
   </View>
   <View style={styles.buttonContainer}>
     <TouchableOpacity style={styles.button} onPress={editable ? handleUpdate : toggleEdit}>
