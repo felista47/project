@@ -17,41 +17,26 @@ const SignUpScreen  = ({ navigation }) => {
 
 
   const createAccount = async () => {
-      try {
-        console.log(user,accountType);
-        const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`, user);
-        console.log('data recived from signup response',response.data);
-        const userEmailResponse = response.data.email;
-        setUser({
-          email: '',
-          password: '',
-        });
-        setAuthData(accountType, userEmailResponse); // Update the AuthContext values
-        alert('Registered  successfully!');
-        navigation.navigate('SignIn',);
-        console.log('signup', accountType, userEmailResponse);
-      }
-    catch (error) {
+    try {
+      console.log(user, accountType);
+      const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`, user);
+      console.log('data received from signup response', response.data);
+      const userEmailResponse = response.data.email;
+      setUser({
+        email: '',
+        password: '',
+      });
+      setAuthData(accountType, userEmailResponse); // Update the AuthContext values
+      alert('Registered successfully!');
+      navigation.navigate('SignIn');
+      console.log('signup', accountType, userEmailResponse);
+    } catch (error) {
       console.error('Error registering:', error);
-      if (error.response) {
-        console.log('Server responded with an error status:', error.response.status);
-        if (error.response.status === 401) {
-          alert('Invalid email or password. Please try again.');
-        } else {
-          alert('An error occurred while registering in. Please try again later.');
-        }
-      } else if (error.request) {
-        console.log('No response received from the server.');
-        alert('No response received from the server. Please try again later.');
-      } else {
-                console.log('Error setting up the request:', error.message);
-        alert('An unexpected error occurred. Please try again later.');
-      }
+      const errorMessage = error.response.data.error
+      alert(errorMessage);
     }
-        
-    
   };
-
+  
 
   return (
     <KeyboardAvoidingView style={styles.container}>

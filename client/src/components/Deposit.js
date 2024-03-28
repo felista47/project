@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
-import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios';
+import { Linking } from 'react-native';
 
 
 const Deposit = ({ navigation }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { uid } = useAuth();
+  const {setAuthData} = useAuth();
   const [operator, setOperator] = useState("")
   const [deposit, setDeposit] = useState({
     phone: "",
@@ -23,11 +23,20 @@ const Deposit = ({ navigation }) => {
     try {
       // Make API request to update user data
       console.log('req body',deposit)
-      await axios.put(`http://172.16.121.186:3000/token`, deposit);
+      const Payment =await axios.post(`http://172.16.121.45:5000/payment`, deposit);
+      console.log('data received from response',Payment.data);
+      const paymentUrl=Payment.data.redirect_url
+      const depToken= Payment.data.token
+      const trackingId =Payment.data.data.order_tracking_id
+      setAuthData(depToken,trackingId)
+      if (paymentUrl) {
+        await Linking.openURL(paymentUrl);
+        // navigation.navigate('HomeScreen');
+      } else {
+        console.error('Payment URL not provided in the response');
+        navigation.navigate('HomeScreen');
 
-      // Update local state with edited data
-      alert('deposit made succesfully');
-      navigation.navigate('HomeScreen');
+      }
     } catch (error) {
       console.error('Error updating user data:', error);
     }

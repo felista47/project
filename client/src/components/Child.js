@@ -83,6 +83,7 @@ const Child = () => {
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
   </View>
+  
   <ScrollView style={styles.studentData}>
       {renderTextInput('ID:', studentData[0].studentID, 'studentID')}
       {renderTextInput('Name', studentData[0].childFullName, 'childFullName')}
@@ -90,7 +91,7 @@ const Child = () => {
       {renderTextInput('Balance', studentData[0].BalAmount.toString(), 'BalAmount')}
       {renderTextInput('Allowance Limit', studentData[0].AllowanceLimit.toString(), 'AllowanceLimit')}
       {renderTextInput('Allowance Frequency', studentData[0].Frequency, 'Frequency')}
-</ScrollView>
+  </ScrollView>
 
   <View style={styles.buttonContainer}>
   <TouchableOpacity style={styles.button} onPress={editable ? () => handleUpdate(studentData[0].studentID) : toggleEdit}>

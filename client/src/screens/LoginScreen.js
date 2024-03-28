@@ -15,38 +15,27 @@ const LoginScreen = ({ navigation}) => {
 
   const handleLogin = async () => {
     try {
-      console.log(user,accountType);
+      console.log(user, accountType);
       const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
-      console.log('data recieved from res',response.data);
+      console.log('data received from response', response.data);
       const userEmailResponse = response.data.email;
       setUser({
         email: '',
         password: '',
       });
       setAuthData(accountType, userEmailResponse); // Update the AuthContext values
-
+  
       alert('Logged in successfully!');
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
       navigation.navigate(homeScreen);
       console.log('login', accountType, userEmailResponse);
-    } catch (error) {
-      console.error('Error logging in:', error);
-      if (error.response) {
-        console.log('Server responded with an error status:', error.response.status);
-        if (error.response.status === 401) {
-          alert('Invalid email or password. Please try again.');
-        } else {
-          alert('An error occurred while logging in. Please try again later.');
-        }
-      } else if (error.request) {
-        console.log('No response received from the server.');
-        alert('No response received from the server. Please try again later.');
-      } else {
-        console.log('Error setting up the request:', error.message);
-        alert('An unexpected error occurred. Please try again later.');
+      } catch (error) {
+        console.error('Error logging in:', error);
+        const errorMessage = error.response.data.error
+        alert(errorMessage);
       }
-    }
   };
+  
  
   
   return (

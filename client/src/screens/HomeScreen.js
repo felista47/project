@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView , Button} from 'react-native';
+import { StyleSheet, Text, View, Image,TouchableOpacity, Pressable,ScrollView , Button} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -11,6 +11,7 @@ const HomeScreen = ({navigation}) => {
   const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
   const [parent, setParent] = useState('');
+  const [students, setStudents] = useState([]);
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -26,6 +27,7 @@ const HomeScreen = ({navigation}) => {
 
   useEffect(() => {
     fetchData();
+    fetchChildData();
   }, [accountType, userEmail]);
   
 
@@ -38,6 +40,17 @@ const HomeScreen = ({navigation}) => {
        } 
     catch (error) {
       console.error('Error fetching user data:', error);
+    }
+  };
+
+  const fetchChildData = async () => {
+    try {
+      const response =await axios.get(`https://pocket-money.up.railway.app/student/parent/${userEmail}`);
+      const studentsData = response.data;
+      setStudents(studentsData);
+      console.log('children data:',students);
+    } catch (error) {
+      console.error('Error fetching parents children data:', error);
     }
   };
 
@@ -84,22 +97,23 @@ const HomeScreen = ({navigation}) => {
 
       {/* balance of user account */}
   <View style={styles.containerTwo}>
-  {/* {parent.children.map((child, index) => ( */}
-        <View>
-          <Text> Balance</Text>
-          {/* <Text placeholder="Ksh.0" style={styles.containerTwoText}>KSH.{parent.financialInformation.allowanceBalAmount}<FontAwesomeIcon icon={ faEyeSlash }/></Text> */}
+      {students.map((student, index) => (
+        <View style={styles.containerTwoBal} key={index}>
+          <Text style={{textAlign: 'center', fontSize:18 }}>Balance</Text>
+          <Text style={{textAlign: 'center', fontSize:24, fontWeight:'400' }}> KSH. {student.BalAmount}<FontAwesomeIcon icon={ faEyeSlash } /></Text>
+         <Pressable onPress={()=>navigation.navigate('Finance')}><Text style={{fontSize:18, fontWeight:'bold',color:'#2ECC71'}}>Allowance Limit KSH.{student.AllowanceLimit}</Text></Pressable> 
         </View>
-      {/* ))} */}
+      ))}
   </View>
 
   {/* withdraw and deposit options */}
   <View style={styles.containerThree}>
-<TouchableOpacity style={styles.ButtonBlue} onPress={()=>navigation.navigate('Deposit')}>
-  <Text style={styles.buttonText}>Deposit</Text>
-</TouchableOpacity>
-<TouchableOpacity style={styles.ButtonRed} onPress={()=>navigation.navigate('Withdraw')}>
-<Text style={styles.buttonText}>Withdraw</Text>
-</TouchableOpacity>
+    <TouchableOpacity style={styles.ButtonBlue} onPress={()=>navigation.navigate('Deposit')}>
+      <Text style={styles.buttonText}>Deposit</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.ButtonRed} onPress={()=>navigation.navigate('Withdraw')}>
+    <Text style={styles.buttonText}>Withdraw</Text>
+    </TouchableOpacity>
   </View>
 
   {/* Transaction statement */}
@@ -172,12 +186,16 @@ const styles = StyleSheet.create({
   containerTwo:{
     width:'80%',
     elevation: 7,
-    padding:'3%',
     marginTop:'5%',
-    alignItems:'center',
     backgroundColor:'white',
-    height:100,
+    height:'15%',
     borderRadius:10,
+  },
+  containerTwoBal:{
+    padding:'5%',
+    flex:1,
+    alignItems:'center',
+    justifyContent:'space-evenly',
   },
   containerTwoText:{
     fontSize:20,
@@ -191,7 +209,7 @@ const styles = StyleSheet.create({
   buttonText:{
     color:'white',
   },
-  ButtonBlue:{//changed to graan
+  ButtonBlue:{//changed to green
     borderRadius: 20,
     padding: 10,
     backgroundColor: '#2ECC71',

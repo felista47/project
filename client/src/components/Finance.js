@@ -1,4 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image, ScrollView } from 'react-native';
+import { faEdit } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
@@ -37,13 +39,9 @@ const Finance = ({navigation}) => {
         console.error('Error updating student data:', error);
       }
     };
-    
-    const handleCancelPress = () => {
-      setStudentData(studentData); // Reset to original data
-      setEditable(false);
-    };
+
     const handleInputChange = (field, value) => {
-      let updatedStudentData = [...studentData];
+      const updatedStudentData = [...studentData];
       // Assuming each student has an _id field
       const studentIndex = updatedStudentData.findIndex(student => student.studentID === studentData[0].studentID);
       // If the studentIndex is found
@@ -52,23 +50,28 @@ const Finance = ({navigation}) => {
           ...updatedStudentData[studentIndex],
           [field]: value,
         };
-        setStudentData(updatedStudentData);
+        setStudentData(updatedStudentData); // Update studentData state with the new value
       }
     };
+    
   
     const renderTextInput = (label, value, field) => {
       return (
-        <View style={styles.inputContainer}>
+        <View style={styles.inputContainerBal}>
           <Text>{label}</Text>
             <TextInput
               value={value}
-              onChangeText={(text) => handleInputChange(field,text)}
+              onChangeText={(text) => handleInputChange(field, text)}
               editable={editable}
               style={styles.textInput}
             />
+      <TouchableOpacity style={styles.button} onPress={editable ? () => handleUpdate(studentData[0].studentID) : toggleEdit}>
+      <FontAwesomeIcon icon={faEdit} style={{ color: 'white' }} />
+      </TouchableOpacity>
         </View>
       );
     };
+    
     if (!studentData) {
       return (
         <View style={styles.loadingContainer}>
@@ -84,20 +87,20 @@ const Finance = ({navigation}) => {
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
   </View>
   <View style={styles.studentData}>
-    <View style={styles.inputContainerBal}><Text>NAME: {studentData[0].childFullName}</Text></View>
+
+    <View style={styles.inputContainerBal}>
+      <Text>NAME: {studentData[0].childFullName}</Text>
+    </View>
+
     <View style={styles.inputContainerBal}>
       <Text>Balance: KSH. {studentData[0].BalAmount}</Text>
       <TouchableOpacity style={styles.buttonBalDep} onPress={()=>navigation.navigate('Deposit')}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Deposit</Text></TouchableOpacity>
     </View>
-    <View style={styles.inputContainerBal}>
-      <Text>Allowance Limit:  KSH.{studentData[0].AllowanceLimit}</Text>
-      <TouchableOpacity style={styles.buttonBalDep} onPress={()=>navigation.navigate('Deposit')}><Text style={{ color: 'white', textAlign: 'center' }}>set limit</Text></TouchableOpacity>
-    </View>
-    <View style={styles.inputContainerBal}>
-      <Text>Allowance Frequency: {studentData[0].Frequency}</Text>
-      <TouchableOpacity style={styles.buttonBalDep} onPress={()=>navigation.navigate('Deposit')}><Text style={{ color: 'white', textAlign: 'center' }}>Deposit</Text></TouchableOpacity>
-    </View>
+    {renderTextInput('Allowance Limit: ', studentData[0].AllowanceLimit.toString(), 'AllowanceLimit')}
+   
+      {renderTextInput('Allowance Frequency', studentData[0].Frequency, 'Frequency')}
+
   </View>
 
   
@@ -199,10 +202,8 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   textInput: {
-   
     color:'black',
-  
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    // paddingHorizontal: 10,
+    // paddingVertical: 5,
   },
 });
