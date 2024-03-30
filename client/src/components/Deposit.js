@@ -3,103 +3,194 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native
 import {Picker} from '@react-native-picker/picker'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios';
-import { Linking } from 'react-native';
-
+import * as WebBrowser from 'expo-web-browser';
 
 const Deposit = ({ navigation }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const {setAuthData} = useAuth();
-  const [operator, setOperator] = useState("")
-  const [deposit, setDeposit] = useState({
-    phone: "",
-    amount: ""
-  });
+  const [showVerify, setShowVerify] = useState(false);
+  const {userEmail} = useAuth();
+  const [phone, setPhone] = useState("");
+  const [amount,setAmount] = useState("");
+  const [token,setToken]=useState("")
+  const [trackingId,setTrackingId]=useState("")
 
+  const createTokenAndRegisterIPN = async () => {
+      const data = JSON.stringify({
+          "consumer_key": "qkio1BGGYAXTu2JOfm7XSXNruoZsrqEW",
+          "consumer_secret": "osGQ364R49cXKeOYSpaOnT++rHs="
+      });
+  
+      try {
+          // Create token request
+          const tokenResponse = await axios.post("https://cybqa.pesapal.com/pesapalv3/api/Auth/RequestToken", data, {
+              headers: {
+                  "Accept": "application/json",
+                  "Content-Type": "application/json"
+              }
+          });
+  
+          const tokenData = tokenResponse.data;
+          const token = tokenData.token;
+          setToken(token)
+          console.log('create token :',token)
+          // Register IPN request
+          const ipnRegistrationUrl = "https://cybqa.pesapal.com/pesapalv3/api/URLSetup/RegisterIPN";
+  
+          const ipnData = JSON.stringify({
+              "url": "https://pocket-money.up.railway.app/payment/ipn",
+              "ipn_notification_type": "GET"
+          });
+  
+          const ipnHeaders = {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+          };
+  
+          const ipnResponse = await axios.post(ipnRegistrationUrl, ipnData, { headers: ipnHeaders });
+  
+          const ipnResponseData = ipnResponse.data;
+          const ipnId = ipnResponseData.ipn_id;
+          const ipnUrl = ipnResponseData.url;
+  
+          console.log("IPN registration successful");
+          console.log("IPN ID:", ipnId);
+          console.log("IPN URL:", ipnUrl);
+  
+          return { token, ipnId, ipnUrl };
+      } catch (error) {
+          console.error("Error:", error.message);
+          throw error;
+      }
+  };
+  
+ 
+  const handleConfirmDeposit = async () => {
+  
+      try {
+          const { token, ipnId } = await createTokenAndRegisterIPN();
+          const merchantReference = Math.floor(Math.random() * 1000000000000000000);
+          const callbackUrl = "pmms://app/src/components/Finance";
+          const branch = "Manoti";
+          const headers = {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+          };
+  
+          const data = {
+              "id": `${merchantReference}`,
+              "currency": "KES",
+              "amount": amount,
+              "description": "Payment description goes here",
+              "callback_url": `${callbackUrl}`,
+              "notification_id": `${ipnId}`,
+              "branch": `${branch}`,
+              "billing_address": {
+                  "email_address": `${userEmail}`,
+                  "phone_number": phone,
+                  "country_code": "KE",
+                  "line_1": "Pesapal Limited",
+                  "line_2": "",
+                  "city": "",
+                  "state": "",
+                  "postal_code": "",
+                  "zip_code": ""
+              }
+          };
+          const response = await axios.post("https://cybqa.pesapal.com/pesapalv3/api/Transactions/SubmitOrderRequest", data, { headers });
+          console.log("Order submission successful:");
+          console.log(response.data);
+        const redirectURL = response.data.redirect_url;
+        const orderTrackingId= response.data.order_tracking_id
+        setTrackingId(orderTrackingId)
+        console.log('order tracking id:',orderTrackingId)
+        await WebBrowser.openBrowserAsync(redirectURL)
+        setShowVerify(true)
+      } catch (error) {
+          console.error("Error submitting order:", error.message);
+          if (error.response) {
+              console.error("Response data:", error.response.data);
+              console.error("Response status:", error.response.status);
+          }
+      }
+  };
+  
+ 
   const handleContinue = () => {
     setShowConfirmation(true);
   };
 
-  const handleConfirmDeposit = async () => {
+  const getTransactionStatus = async () => {
+    console.log('req body befor transaction status',trackingId,token)
     try {
-      // Make API request to update user data
-      console.log('req body',deposit)
-      const Payment =await axios.post(`http://172.16.121.45:5000/payment`, deposit);
-      console.log('data received from response',Payment.data);
-      const paymentUrl=Payment.data.redirect_url
-      const depToken= Payment.data.token
-      const trackingId =Payment.data.data.order_tracking_id
-      setAuthData(depToken,trackingId)
-      if (paymentUrl) {
-        await Linking.openURL(paymentUrl);
-        // navigation.navigate('HomeScreen');
-      } else {
-        console.error('Payment URL not provided in the response');
+        const response = await axios.get(`https://cybqa.pesapal.com/pesapalv3/api/Transactions/GetTransactionStatus?orderTrackingId=${trackingId}`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+  
+        console.log("Transaction status:", response.data);
         navigation.navigate('HomeScreen');
-
-      }
-    } catch (error) {
-      console.error('Error updating user data:', error);
+        // Handle transaction status
+          } catch (error) {
+        console.error("Error retrieving transaction status:", error.message);
     }
   };
 
   return (
     <View>
-      {!showConfirmation ? ( // Display deposit details form
-        <View style={styles.DepContainerOne}>
-          <Text style={styles.DepContainerOneText}>Deposit Cash</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="KSH."
-            keyboardType="numeric"
-            value={deposit.amount}
-            onChangeText={(text) => setDeposit({ ...deposit, amount: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="07232"
-            value={deposit.number}
-            onChangeText={(text) => setDeposit({ ...deposit, phone: text })}
-          />
-          <Picker
-            selectedValue={deposit.operator}
-            onValueChange={(itemValue) => setOperator(itemValue)}
-            style={styles.selectInput}
-          >
-            <Picker.Item label="Select your operator" value="" />
-            <Picker.Item label="M-pesa" value="M-pesa" />
-            <Picker.Item label="Other" value="Other" />
-          </Picker>
-          <TouchableOpacity style={styles.ButtonBlue} onPress={handleContinue}>
-            <Text>Continue</Text>
-          </TouchableOpacity>
+{!showConfirmation ? ( // Display deposit details form
+  <View style={styles.DepContainerOne}>
+    <Text style={styles.DepContainerOneText}>Deposit Cash</Text>
+    <TextInput
+      style={styles.input}
+      placeholder="KSH."
+      keyboardType="numeric"
+      value={amount}
+      onChangeText={(text) => setAmount(text)}
+    />
+    <TextInput
+      style={styles.input}
+      placeholder="07232"
+      value={phone}
+      onChangeText={(text) => setPhone(text)}
+    />
+    <TouchableOpacity style={styles.ButtonBlue} onPress={handleContinue}>
+      <Text>Continue</Text>
+    </TouchableOpacity>
+  </View>
+) : ( // Display confirmation view
+  <View style={styles.DepContainerTwo}>
+    <Text style={styles.DepContainerOneText}>Confirm</Text>
+    <View style={styles.confirmDep}>
+      <Text style={styles.confirmDepText}>Deposit Cash</Text>
+      <View style={styles.confirmDepCard}>
+        <View>
+          <Text>Number</Text>
+          <Text>{phone}</Text>
         </View>
-      ) : ( // Display confirmation view
-        <View style={styles.DepContainerTwo}>
-          <Text style={styles.DepContainerOneText}>Confirm</Text>
-
-          <View style={styles.confirmDep}>
-            <Text style={styles.confirmDepText}>Deposit Cash</Text>
-            <View style={styles.confirmDepCard}>
-              <View>
-                <Text>SOURCE OF FUNDS</Text>
-                <Text>{operator}</Text>
-              </View>
-              <View>
-                <Text>Number</Text>
-                <Text>{deposit.number}</Text>
-              </View>
-              <View>
-                <Text>AMOUNT</Text>
-                <Text>{deposit.amount}</Text>
-              </View>
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.ButtonBlue} onPress={handleConfirmDeposit}>
-            <Text>CONFIRM DEPOSIT</Text>
-          </TouchableOpacity>
+        <View>
+          <Text>AMOUNT</Text>
+          <Text>{amount}</Text>
         </View>
-      )}
+      </View>
+    </View>
+    <TouchableOpacity style={styles.ButtonBlue} onPress={handleConfirmDeposit}>
+    <Text>CONFIRM DEPOSIT</Text>
+    </TouchableOpacity>
+    {showVerify &&(
+      <View>
+          <TouchableOpacity style={styles.ButtonBlue} onPress={getTransactionStatus}>
+        <Text>Verify Payment</Text>
+      </TouchableOpacity>
+      </View>
+    )}
+  </View>
+)}
+
+
+      
     </View>
   );
 };

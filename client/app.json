@@ -2,6 +2,7 @@
   "expo": {
     "name": "client",
     "slug": "pocket-money-management-system",
+    "scheme": "pmms",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -19,14 +20,30 @@
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.manoti.pocketmoneymanagementsystem"
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "*.myapp.io",
+              "pathPrefix": "/records"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "package": "com.fel_noti.pocketmoneymanagementsystem"
     },
     "web": {},
     "extra": {
       "eas": {
-        "projectId": "c56676c2-302a-4a29-81e7-eacb57eca2ed"
+        "projectId": "428aceb5-9c67-4df2-80d5-a1cf1e796b97"
       }
-    },
-    "owner": "manoti"
+    }
   }
 }

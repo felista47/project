@@ -15,7 +15,7 @@ const LoginScreen = ({ navigation}) => {
 
   const handleLogin = async () => {
     try {
-      console.log(user, accountType);
+      console.log('before login',accountType);
       const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/login`, user);
       console.log('data received from response', response.data);
       const userEmailResponse = response.data.email;

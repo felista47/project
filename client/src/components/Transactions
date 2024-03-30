@@ -6,11 +6,19 @@
  import axios from 'axios';
  import { Linking } from 'react-native';
  
- const handleConfirmDeposit = async () => {
+ const Transactions = ({ navigation }) => {
+
+  const {setAuthData} = useAuth();
+  const [deposit, setDeposit] = useState({
+    phone: "",
+    amount: ""
+  });
+  const handleConfirmDeposit = async () => {
+
     try {
       // Make API request to update user data
       console.log('req body',deposit)
-      const Payment =await axios.post(`http://172.16.121.45:5000/payment/getTransactinstaus`, deposit);
+      const Payment =await axios.post(`http://172.16.118.91/payment/getTransactinstaus`, deposit);
       console.log('data received from response',Payment.data);
       const paymentUrl=Payment.data.redirect_url
       const depToken= Payment.data.token
@@ -28,3 +36,6 @@
       console.error('Error updating user data:', error);
     }
   };
+
+}
+export default Transactions;
