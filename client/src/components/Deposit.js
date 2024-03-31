@@ -14,7 +14,6 @@ const Deposit = ({ navigation }) => {
   const [token,setToken]=useState("")
   const [trackingId,setTrackingId]=useState("")
 
-
   // creates a token and registers IPN for pesapal transactions
   const createTokenAndRegisterIPN = async () => {
       const data = JSON.stringify({
@@ -139,12 +138,15 @@ const Deposit = ({ navigation }) => {
             alert("The transaction was terminated by the user.");
             navigation.navigate('HomeScreen');
         } else if (paymentStatusCode === "Completed") {
-          console.log("Transaction status:", response.data.amount);
+          const depAmount =response.data.amount
+          const balAmount = { BalAmount: depAmount };
+          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/5445`,balAmount);
+          console.log("deb update:", depositRes.data );
             alert("The payment was successful.");
             navigation.navigate('HomeScreen');
-        } else if(paymentStatusCode === "") {
-          paymentStatusCode === ""
-           alert("Unknown payment status.");
+        } else if(paymentStatusCode === "INVALID") {
+           alert("Unknown payment status. kindly try again");
+           setShowConfirmation(false)
         }
           } catch (error) {
         console.error("Error retrieving transaction status:", error.message);
