@@ -14,6 +14,8 @@ const Deposit = ({ navigation }) => {
   const [token,setToken]=useState("")
   const [trackingId,setTrackingId]=useState("")
 
+
+  // creates a token and registers IPN for pesapal transactions
   const createTokenAndRegisterIPN = async () => {
       const data = JSON.stringify({
           "consumer_key": "qkio1BGGYAXTu2JOfm7XSXNruoZsrqEW",
@@ -64,7 +66,7 @@ const Deposit = ({ navigation }) => {
       }
   };
   
- 
+ // sends the order request to pesapal to be processed
   const handleConfirmDeposit = async () => {
   
       try {
@@ -116,11 +118,12 @@ const Deposit = ({ navigation }) => {
       }
   };
   
- 
+ // sets the showconfirmation useState to true
   const handleContinue = () => {
     setShowConfirmation(true);
   };
 
+  // gets the transaction status after the payment is processed suscesfully or not
   const getTransactionStatus = async () => {
     console.log('req body befor transaction status',trackingId,token)
     try {
@@ -131,12 +134,23 @@ const Deposit = ({ navigation }) => {
         });
   
         console.log("Transaction status:", response.data);
-        navigation.navigate('HomeScreen');
-        // Handle transaction status
+        const paymentStatusCode = response.data.payment_status_description;
+        if (paymentStatusCode === "Failed") {
+            alert("The transaction was terminated by the user.");
+            navigation.navigate('HomeScreen');
+        } else if (paymentStatusCode === "Completed") {
+          console.log("Transaction status:", response.data.amount);
+            alert("The payment was successful.");
+            navigation.navigate('HomeScreen');
+        } else if(paymentStatusCode === "") {
+          paymentStatusCode === ""
+           alert("Unknown payment status.");
+        }
           } catch (error) {
         console.error("Error retrieving transaction status:", error.message);
     }
   };
+
 
   return (
     <View>
