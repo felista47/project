@@ -12,6 +12,7 @@ const HomeScreen = ({navigation}) => {
   const [greeting, setGreeting] = useState('');
   const [parent, setParent] = useState('');
   const [students, setStudents] = useState([]);
+  const [transactions, setTransaction] = useState([]);
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -28,6 +29,7 @@ const HomeScreen = ({navigation}) => {
   useEffect(() => {
     fetchData();
     fetchChildData();
+    fetchTransactionsData();
   }, [accountType, userEmail]);
   
 
@@ -51,6 +53,18 @@ const HomeScreen = ({navigation}) => {
       console.log('children data:',students);
     } catch (error) {
       console.error('Error fetching parents children data:', error);
+    }
+  };
+
+  const fetchTransactionsData = async () => {
+    try {
+      const response = await axios.get(`https://pocket-money.up.railway.app/transactions/${userEmail}`,{ timeout: 5000 });
+      const TransactionsInfo = response.data;
+      setTransaction(TransactionsInfo)
+      console.log('transactions data',TransactionsInfo)
+       } 
+    catch (error) {
+      console.error('Error fetching transaction data:', error);
     }
   };
 
@@ -124,19 +138,20 @@ const HomeScreen = ({navigation}) => {
 
   {/* Transaction statement item */}
   <ScrollView style={styles.containerFive}>
-    <View style={styles.transactionItem}>
+  {transactions.map((transaction, index) => (
+    <View style={styles.transactionItem} key={index}>
       <View  style={styles.transactionItemIcon} >
       <FontAwesomeIcon icon={ faScroll }/>
       </View>
       <View>
-        <Text placeholder=''>Your transaction will appear hear</Text>
-        {/* <Text>338890</Text> */}
+        <Text>{transaction.paymentAccount}</Text>
       </View>
-      {/* <View>
-        <Text>- KSH 20</Text>
-        <Text>10 Jan 2024</Text>
-      </View> */}
+      <View>
+        <Text>KSH. {transaction.Amount}</Text>
+        <Text>{transaction.createdAt}</Text>
+      </View>
     </View>
+     ))}
   </ScrollView>
 </View>
   );

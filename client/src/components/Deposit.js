@@ -124,7 +124,6 @@ const Deposit = ({ navigation }) => {
 
   // gets the transaction status after the payment is processed suscesfully or not
   const getTransactionStatus = async () => {
-    console.log('req body befor transaction status',trackingId,token)
     try {
         const response = await axios.get(`https://cybqa.pesapal.com/pesapalv3/api/Transactions/GetTransactionStatus?orderTrackingId=${trackingId}`, {
             headers: {
@@ -138,6 +137,18 @@ const Deposit = ({ navigation }) => {
             alert("The transaction was terminated by the user.");
             navigation.navigate('HomeScreen');
         } else if (paymentStatusCode === "Completed") {
+          const {payment_account,payment_method,amount,created_date,confirmation_code} = response.data;
+          console.log("deb data:", payment_account);
+          const transactionData = {
+            parent: userEmail, 
+            Amount: amount,
+            createdAt:created_date, 
+            confirmationCode: confirmation_code,
+            paymentAccount: payment_account,
+            paymentMethod:payment_method
+        }
+        console.log("transaction data:",transactionData);
+        await axios.post(`https://pocket-money.up.railway.app/transactions`,transactionData)
           const depAmount =response.data.amount
           const balAmount = { BalAmount: depAmount };
           const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/5445`,balAmount);
