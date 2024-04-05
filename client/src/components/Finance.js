@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image, ScrollView } from 'react-native';
-import { faEdit } from '@fortawesome/free-solid-svg-icons'
+import { faEdit,faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -31,8 +31,10 @@ const Finance = ({navigation}) => {
     };
 
     const handleUpdate = async (studentID) => {
+      console.log('Data before update:', studentData,studentID);
+
       try {
-        const response = await axios.put(`https://pocket-money.up.railway.app/student/${studentID}`, studentData);
+        const response = await axios.put(`https://pocket-money.up.railway.app/student/${studentID}`,studentData[0]);
         setEditable(false);
         console.log('Data after update:', response.data);
       } catch (error) {
@@ -40,37 +42,47 @@ const Finance = ({navigation}) => {
       }
     };
 
-    const handleInputChange = (field, value) => {
-      const updatedStudentData = [...studentData];
-      // Assuming each student has an _id field
-      const studentIndex = updatedStudentData.findIndex(student => student.studentID === studentData[0].studentID);
-      // If the studentIndex is found
-      if (studentIndex !== -1) {
-        updatedStudentData[studentIndex] = {
-          ...updatedStudentData[studentIndex],
-          [field]: value,
-        };
-        setStudentData(updatedStudentData); // Update studentData state with the new value
-      }
+    const handleInputChange = (field, value, studentID) => {
+      setStudentData(prevStudentData => {
+        return prevStudentData.map(student => {
+          if (student.studentID === studentID) {
+            return {
+              ...student,
+              [field]: value
+            };
+          }
+          return student;
+        });
+      });
     };
+    
 
-
-    const renderTextInput = (label, value, field) => {
+    const renderTextInput = (label, value, field, studentID) => {
       return (
         <View style={styles.inputContainerBal}>
           <Text>{label}</Text>
-            <TextInput
-              value={value}
-              onChangeText={(text) => handleInputChange(field, text)}
-              editable={editable}
-              style={styles.textInput}
-            />
-      <TouchableOpacity style={styles.button} onPress={editable ? () => handleUpdate(studentData[0].studentID) : toggleEdit}>
-      <FontAwesomeIcon icon={faEdit} style={{ color: 'white' }} />
-      </TouchableOpacity>
+          <TextInput
+            value={value}
+            onChangeText={(text) => handleInputChange(field, text ,studentID)}
+            editable={editable}
+            style={styles.textInput}
+          />
+         <View style={styles.button}>
+  {editable ? ( 
+    <TouchableOpacity style={styles.button} onPress={() => handleUpdate(studentID)}>
+      <FontAwesomeIcon icon={faCheck} style={{ color: 'white' }} /> 
+    </TouchableOpacity>
+  ) : (
+    <TouchableOpacity onPress={toggleEdit}>
+      <FontAwesomeIcon icon={faEdit} style={{ color: 'white' }} /> 
+    </TouchableOpacity>
+  )}
+</View>
+
         </View>
       );
     };
+    
 
     if (!studentData) {
       return (
@@ -80,33 +92,38 @@ const Finance = ({navigation}) => {
       );
     }
 
- return (
-<View style={styles.mainContainer}>
-  <View style={styles.studentProfile}>
+
+    
+return (
+  <View style={styles.mainContainer}>
+    <View style={styles.studentProfile}>
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
-  </View>
-  <View style={styles.studentData}>
-
-    <View style={styles.inputContainerBal}>
-      <Text>NAME: {studentData[0].childFullName}</Text>
     </View>
+    <View style={styles.studentData}>
+      {/* Map over studentData and render renderTextInput for each student */}
+      {studentData.map((student) => (
+        <View key={student.studentID}>
+          <View style={styles.inputContainerBal}>
+            <Text>NAME: {student.childFullName}</Text>
+          </View>
 
-    <View style={styles.inputContainerBal}>
-      <Text>Balance: KSH. {studentData[0].BalAmount}</Text>
-      <TouchableOpacity style={styles.buttonBalDep} onPress={()=>navigation.navigate('Deposit')}>
-      <Text style={{ color: 'white', textAlign: 'center' }}>Deposit</Text></TouchableOpacity>
+          <View style={styles.inputContainerBal}>
+            <Text>Balance: KSH. {student.BalAmount}</Text>
+            <TouchableOpacity style={styles.buttonBalDep} onPress={() => navigation.navigate('Deposit')}>
+              <Text style={{ color: 'white', textAlign: 'center' }}>Deposit</Text>
+            </TouchableOpacity>
+          </View>
+
+          {renderTextInput('Allowance Limit: ', student.AllowanceLimit.toString(), 'AllowanceLimit', student.studentID)}
+          {renderTextInput('Daily Limit: ', student.DailyLimit.toString(), 'AllowanceLimit', student.studentID)}
+          {renderTextInput('Allowance Frequency', student.Frequency, 'Frequency', student.studentID)}
+        </View>
+      ))}
     </View>
-    {renderTextInput('Allowance Limit: ', studentData[0].AllowanceLimit.toString(), 'AllowanceLimit')}
-
-      {renderTextInput('Allowance Frequency', studentData[0].Frequency, 'Frequency')}
-
   </View>
+);
 
-
-
- </View>
-  );
 };
 
 export default Finance;

@@ -3,13 +3,13 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Pressable }
 import { useSelector, useDispatch } from 'react-redux';
 import  {Ionicons,Feather} from '@expo/vector-icons';
 import { decrementQuantity, incrementQuantity, removeFromCart ,clearCart} from "../reduxStore/reducers/CartReducer";
-import { useNavigation } from '@react-navigation/native'; // Moved this import here
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart.cart);
   const dispatch = useDispatch();
-  const navigation = useNavigation(); // Now using useNavigation directly
+  const navigation = useNavigation();
   const [showPayment, setShowPayment] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [studentID, setStudentID] = useState('');
@@ -49,16 +49,29 @@ const Cart = () => {
 
   const checkout = async () => {
     try {
-      const response = await axios.put(`https://pocket-money.up.railway.app/student/checkout/${studentID}`, customer);
+      const balAmount = parseFloat(customer.BalAmount);
+  
+      console.log('Data before update:', { BalAmount: balAmount, studentID: studentID });
+      const response = await axios.put(`https://pocket-money.up.railway.app/student/checkOut/${studentID}`, { BalAmount: balAmount });
       console.log('Data after update:', response.data);
       dispatch(clearCart());
       alert('Payment made successfully!');
       setShowPayment(false);
       navigation.navigate('VendorHomeScreen');
     } catch (error) {
-      console.error('Error updating student data:', error);
+      if (error.response) {
+        // If the error has a response, it means the server returned an error response
+        const errorMessage = error.response.data.message;
+        alert(errorMessage); // Display the error message to the user
+      } else {
+        // If the error does not have a response, it's likely a network error
+        console.error('Network error:', error.message);
+        alert('Network error. Please check your internet connection.');
+      }
     }
   };
+  
+  
 
   return (
     <View style={styles.containerMain}>
@@ -96,7 +109,6 @@ const Cart = () => {
             <TextInput
               style={styles.input}
               placeholder="Student ID"
-              keyboardType="numeric"
               value={studentID}
               onChangeText={setStudentID}
             />
