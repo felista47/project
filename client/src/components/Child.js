@@ -1,14 +1,28 @@
-import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image, ScrollView,Pressable,KeyboardAvoidingView} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
+import { useNavigation } from '@react-navigation/native';
+import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
+import Toast from 'react-native-root-toast';
+import QRCode from 'react-native-qrcode-svg'
 
 
 const Child = () => {
  const {userEmail} = useAuth();
+ const navigation = useNavigation();
  const[studentData, setStudentData] =useState(null)
  const [editable, setEditable] = useState(false);
-
+ const [QR, setQR] = useState("");
+ const [QRref, setQRref] = useState();
+ const [hasPermissions, setHasPermissions] = useState(false);
+const [newStudent,setNewStudent]=useState({
+  parent:userEmail,
+  studentID: '',
+  childFullName: '',
+  gradeClass:'',
+});
  useEffect(() => {
       fetchData();
     }, [userEmail]);
@@ -24,11 +38,33 @@ const Child = () => {
       }
     };
 
+    const generateQRCode = (studentID)=>{
+      setQR(studentID)
+      console.log('Data before QR :',studentID);
+    }
+  
+    useEffect(()=>{
+      (async ()=>{ setHasPermissions((await MediaLibrary.requestPermissionsAsync()).granted) })()
+    }, [])
+  
+    const saveQRCode = ()=>{
+      if(!hasPermissions || !QRref) return
+  
+      QRref.toDataURL(async data =>{
+        const QRCodeImg = FileSystem.documentDirectory + "QRCode.png";
+        await FileSystem.writeAsStringAsync(QRCodeImg, data, { encoding: FileSystem.EncodingType.Base64 })
+        MediaLibrary.saveToLibraryAsync(QRCodeImg)
+        .then(()=> Toast.show("QR Code saved to gallery", Toast.durations.LONG))
+        .catch(console.error)
+      })
+    }
+
     const toggleEdit = () => {
       setEditable(!editable);
     };
-  
+ 
     const handleUpdate = async (studentID) => {
+      console.log('Data before update:', studentData);
       try {
         const response = await axios.put(`https://pocket-money.up.railway.app/student/${studentID}`, studentData);
         setEditable(false);
@@ -37,16 +73,23 @@ const Child = () => {
         console.error('Error updating student data:', error);
       }
     };
-    
+    const handleNewstudent = async() =>{
+      try {
+        const response = await axios.post(`https://pocket-money.up.railway.app/student/`, newStudent);
+        setEditable(false);
+        console.log('Data after adding:', response.data);
+        fetchData();
+      } catch (error) {
+        console.error('Error adding new student', error);
+      }
+    }
     const handleCancelPress = () => {
       setStudentData(studentData); // Reset to original data
       setEditable(false);
     };
     const handleInputChange = (field, value) => {
       let updatedStudentData = [...studentData];
-      // Assuming each student has an _id field
       const studentIndex = updatedStudentData.findIndex(student => student.studentID === studentData[0].studentID);
-      // If the studentIndex is found
       if (studentIndex !== -1) {
         updatedStudentData[studentIndex] = {
           ...updatedStudentData[studentIndex],
@@ -54,11 +97,10 @@ const Child = () => {
         };
         setStudentData(updatedStudentData);
       }
-    };
-  
+    }; 
     const renderTextInput = (label, value, field) => {
       return (
-        <View style={styles.inputContainer}>
+        <KeyboardAvoidingView behavior="padding" style={styles.inputContainer}>
           <Text>{label}</Text>
             <TextInput
               value={value}
@@ -66,33 +108,66 @@ const Child = () => {
               editable={editable}
               style={styles.textInput}
             />
-        </View>
+        </KeyboardAvoidingView>
       );
     };
     if (!studentData) {
       return (
-        <View style={styles.loadingContainer}>
-          <Text>Loading...</Text>
-        </View>
+        
+        <KeyboardAvoidingView behavior="padding" style={styles.mainContainer}>
+ <View style={styles.studentProfile}>
+      <Image style={styles.image} source={require('../../assets/avatar.png')} />
+      <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
+  </View>
+  
+        <View style={styles.studentData}>
+ <TextInput
+              style={styles.textInput}
+              placeholder="Student ID"
+              onChangeText={(text) =>setNewStudent({ ...newStudent,studentID:text })}/>
+      <TextInput
+              style={styles.textInput}
+              placeholder="Child Full Name"
+              onChangeText={(text) =>setNewStudent({ ...newStudent,childFullName:text })}
+        />
+      <TextInput
+              style={styles.textInput}
+              placeholder="Grade/Class"
+              onChangeText={(text) =>setNewStudent({ ...newStudent,gradeClass:text })}
+      />
+        <TouchableOpacity style={styles.button} onPress={() => handleNewstudent()}>
+      <Text style={{ color: 'white', textAlign: 'center' }}>Add Student</Text>
+    </TouchableOpacity>
+       </View>
+       </KeyboardAvoidingView>
+
       );
     }
 
  return (
-<View style={styles.mainContainer}>
+<ScrollView behavior="padding" style={styles.mainContainer}>
   <View style={styles.studentProfile}>
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
   </View>
   
-  <ScrollView style={styles.studentData}>
+  <View style={styles.studentData}>
       {renderTextInput('ID:', studentData[0].studentID, 'studentID')}
       {renderTextInput('Name', studentData[0].childFullName, 'childFullName')}
       {renderTextInput('Grade', studentData[0].gradeClass, 'gradeClass')}
-      {renderTextInput('Balance', studentData[0].BalAmount.toString(), 'BalAmount')}
       {renderTextInput('Allowance Limit', studentData[0].AllowanceLimit.toString(), 'AllowanceLimit')}
-      {renderTextInput('Allowance Frequency', studentData[0].Frequency, 'Frequency')}
-  </ScrollView>
+      <TouchableOpacity style={styles.inputContainer} onPress={() => generateQRCode(studentData[0].studentID)}>
+           <Text>GEnerate Qr Code</Text>
+        </TouchableOpacity> 
+        
+         </View>
 
+  <ScrollView style={styles.qr}>
+        <Pressable onPress={saveQRCode}>
+          { QR && <QRCode size={240} value={QR} getRef={setQRref} backgroundColor="#fff"/> }
+        </Pressable>
+  </ScrollView>
+      { QR && <Text style={styles.instraction}>Click The <Text style={styles.instraicon}>QR</Text> Code to save it</Text> }
   <View style={styles.buttonContainer}>
   <TouchableOpacity style={styles.button} onPress={editable ? () => handleUpdate(studentData[0].studentID) : toggleEdit}>
       <Text style={{ color: 'white', textAlign: 'center' }}>{editable ? 'Save' : 'Edit'}</Text>
@@ -104,17 +179,19 @@ const Child = () => {
     )}
   </View>
 
- </View>
+ </ScrollView>
   );
 };
 
 export default Child;
 
 const styles = StyleSheet.create({
+
   mainContainer: {
     padding: '5%',
     backgroundColor: "#e0f2f1",
     flex: 1,
+    paddingBottom:'10%',
   },
   studentProfile:{
     padding:'5%',
@@ -182,5 +259,21 @@ fontWeight:'bold'
   
     paddingHorizontal: 10,
     paddingVertical: 5,
+  },
+  qr:{
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    height: 250,
+    width: 250,
+    marginTop:'-10%', // Add some bottom margin
+
+  },
+
+  instraction:{
+    color: "#adadad"
+  },
+
+  instraicon:{
+    color: "#bf88f3"
   },
 });

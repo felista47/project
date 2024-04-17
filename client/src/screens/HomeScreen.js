@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity, Pressable,ScrollView , Button} from 'react-native';
+import { StyleSheet, Text, View, Image,TouchableOpacity, Pressable,ScrollView ,KeyboardAvoidingView} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { faBell,faChartPie,faEyeSlash, faScroll } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -52,6 +52,9 @@ const HomeScreen = ({navigation}) => {
       setStudents(studentsData);
       console.log('children data:',students);
     } catch (error) {
+      if (error.response.status === 404){
+        alert('add a student to deposit money for',navigation.navigate('HomeScreen'))
+      }
       console.error('Error fetching parents children data:', error);
     }
   };
@@ -64,6 +67,7 @@ const HomeScreen = ({navigation}) => {
       console.log('transactions data',TransactionsInfo)
        } 
     catch (error) {
+  
       console.error('Error fetching transaction data:', error);
     }
   };
@@ -75,12 +79,11 @@ const HomeScreen = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
+      console.log("Screen focused, refetching data...");
       fetchData();
-      return () => {
-        // Cleanup function if needed
-      };
     }, [])
   );
+  
 
   if (!parent) {
     return <Text>Loading...</Text>;
@@ -88,7 +91,7 @@ const HomeScreen = ({navigation}) => {
  
 
   return (
-<View style={styles.mainContainer}>
+<KeyboardAvoidingView behavior="padding" style={styles.mainContainer}>
       {/* top part contains user image links to account, notification and spending chart */}
   <View style={styles.containerOne}>
   <TouchableOpacity style={styles.containerProfile} onPress={navigateToProfile}>
@@ -110,23 +113,36 @@ const HomeScreen = ({navigation}) => {
   </View>
 
       {/* balance of user account */}
-  <View style={styles.containerTwo}>
-      {students.map((student, index) => (
-        <View style={styles.containerTwoBal} key={index}>
-          <Text style={{textAlign: 'center', fontSize:18 }}>Balance</Text>
-          <Text style={{textAlign: 'center', fontSize:24, fontWeight:'400' }}> KSH. {student.BalAmount}<FontAwesomeIcon icon={ faEyeSlash } /></Text>
-         <Pressable onPress={()=>navigation.navigate('Finance')}><Text style={{fontSize:18, fontWeight:'bold',color:'#2ECC71'}}>Allowance Limit KSH.{student.AllowanceLimit}</Text></Pressable> 
-        </View>
-      ))}
-  </View>
+      <View style={styles.containerTwo}>
+  {students.length > 0 ? (
+    students.map((student, index) => (
+      <Pressable onPress={()=>navigation.navigate('Finance')} style={styles.containerTwoBal} key={index}>
+        <Text style={{textAlign: 'center', fontSize:18 }}>Balance</Text>
+        <Text style={{textAlign: 'center', fontSize:24, fontWeight:'400' }}> KSH. {student.BalAmount}<FontAwesomeIcon icon={ faEyeSlash } /></Text>
+        <Pressable onPress={()=>navigation.navigate('Finance')}>
+          <Text style={{fontSize:18, fontWeight:'bold',color:'#2ECC71'}}>Allowance Limit KSH.{student.AllowanceLimit}</Text>
+        </Pressable> 
+      </Pressable>
+    ))
+  ) : (
+    <Pressable onPress={()=>navigation.navigate('Finance')} style={styles.containerTwoBal}>
+      <Text style={{textAlign: 'center', fontSize:18 }}>Balance</Text>
+      <Text style={{textAlign: 'center', fontSize:24, fontWeight:'400' }}> KSH. 0.00<FontAwesomeIcon icon={ faEyeSlash } /></Text>
+      <Pressable onPress={()=>navigation.navigate('Finance')}>
+        <Text style={{fontSize:18, fontWeight:'bold',color:'#2ECC71'}}>Allowance Limit KSH.0.00</Text>
+      </Pressable> 
+    </Pressable>
+  )}
+</View>
+
 
   {/* withdraw and deposit options */}
   <View style={styles.containerThree}>
     <TouchableOpacity style={styles.ButtonBlue} onPress={()=>navigation.navigate('Deposit')}>
       <Text style={styles.buttonText}>Deposit</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.ButtonRed} onPress={()=>navigation.navigate('Withdraw')}>
-    <Text style={styles.buttonText}>Withdraw</Text>
+    <TouchableOpacity style={styles.ButtonRed} onPress={()=>navigation.navigate('Profile')}>
+    <Text style={styles.buttonText}>Student</Text>
     </TouchableOpacity>
   </View>
 
@@ -138,22 +154,29 @@ const HomeScreen = ({navigation}) => {
 
   {/* Transaction statement item */}
   <ScrollView style={styles.containerFive}>
-  {transactions.map((transaction, index) => (
-    <View style={styles.transactionItem} key={index}>
-      <View  style={styles.transactionItemIcon} >
-      <FontAwesomeIcon icon={ faScroll }/>
+  {transactions.length > 0 ? (
+    transactions.map((transaction, index) => (
+      <View style={styles.transactionItem} key={index}>
+        <View  style={styles.transactionItemIcon} >
+          <FontAwesomeIcon icon={ faScroll }/>
+        </View>
+        <View>
+          <Text>{transaction.paymentAccount}</Text>
+        </View>
+        <View>
+          <Text>KSH. {transaction.Amount}</Text>
+          <Text>{transaction.createdAt}</Text>
+        </View>
       </View>
-      <View>
-        <Text>{transaction.paymentAccount}</Text>
-      </View>
-      <View>
-        <Text>KSH. {transaction.Amount}</Text>
-        <Text>{transaction.createdAt}</Text>
-      </View>
+    ))
+  ) : (
+    <View style={styles.transactionItem}>
+      <Text>Your transactions will appear here</Text>
     </View>
-     ))}
-  </ScrollView>
-</View>
+  )}
+</ScrollView>
+
+</KeyboardAvoidingView>
   );
 };
 
@@ -188,7 +211,6 @@ const styles = StyleSheet.create({
   userGreetings: {
     marginLeft: '5%',
   },
- 
   text: {
     fontSize: 16,
     fontWeight: 'bold',

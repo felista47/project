@@ -1,22 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput,Button,Pressable,KeyboardAvoidingView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import  {Ionicons,Feather} from '@expo/vector-icons';
 import { decrementQuantity, incrementQuantity, removeFromCart ,clearCart} from "../reduxStore/reducers/CartReducer";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
+import { CameraView, Camera } from "expo-camera/next";
+
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart.cart);
+  const {userEmail} = useAuth();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [showPayment, setShowPayment] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [studentID, setStudentID] = useState('');
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
   const [customer, setCustomer] = useState({
     BalAmount: 0
   });
 
+  useEffect(() => {
+    const getCameraPermissions = async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+    };
+    getCameraPermissions();
+  }, []);
+  // if (hasPermission === null) {
+  //   return <Text>Requesting for camera permission</Text>;
+  // }
+  // if (hasPermission === false) {
+  //   return <Text>No access to camera</Text>;
+  // }
+  // const handleBarCodeScanned = ({ type, data }) => {
+  //   setScanned(true);
+  //   setStudentID(data);
+  //   alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+  //   checkout();
+  // };
   useEffect(() => {
     const price = cart.reduce((acc, item) => acc + item.productAmount * item.quantity, 0);
     setTotalPrice(price);
@@ -47,19 +72,24 @@ const Cart = () => {
     setShowPayment(!showPayment);
   };
 
-  const checkout = async () => {
+  const checkout = async ({data}) => {
     try {
+      setStudentID(data);
       const balAmount = parseFloat(customer.BalAmount);
-  
       console.log('Data before update:', { BalAmount: balAmount, studentID: studentID });
       const response = await axios.put(`https://pocket-money.up.railway.app/student/checkOut/${studentID}`, { BalAmount: balAmount });
-      console.log('Data after update:', response.data);
+      console.log('Data after student update:', response.data);
       dispatch(clearCart());
       alert('Payment made successfully!');
+      setScanned(true);
       setShowPayment(false);
+      console.log('Data before update:', { shopBal: balAmount, userEmail});
+      const shopBal = await axios.put(`https://pocket-money.up.railway.app/vendor/${userEmail}`, {shopBal: balAmount});
+      console.log('Data after vendor update:', shopBal.data);
       navigation.navigate('VendorHomeScreen');
     } catch (error) {
       if (error.response) {
+        setScanned(true);
         // If the error has a response, it means the server returned an error response
         const errorMessage = error.response.data.message;
         alert(errorMessage); // Display the error message to the user
@@ -74,7 +104,7 @@ const Cart = () => {
   
 
   return (
-    <View style={styles.containerMain}>
+    <KeyboardAvoidingView behavior="padding" style={styles.containerMain}>
       <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>Cart Items:</Text>
       {cart.map((item) => (
         <View key={item._id} style={styles.productContainer}>
@@ -100,28 +130,41 @@ const Cart = () => {
         <Text>Total Price: KSH.{totalPrice.toFixed(2)}</Text>
       </View>
       <View style={styles.containerSell}>
-        {!showPayment ? (
-          <Pressable style={styles.buttonRed} onPress={togglePayment}>
-            <Text>Make Payment</Text>
-          </Pressable>
-        ) : (
-          <View>
-            <TextInput
-              style={styles.input}
-              placeholder="Student ID"
-              value={studentID}
-              onChangeText={setStudentID}
-            />
-            <TouchableOpacity style={styles.buttonOne} onPress={checkout}>
-              <Text>PAY</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
+          <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
           <Text>Continue Selling</Text>
         </Pressable>
       </View>
-    </View>
+
+      <View style={styles.containerScan}>
+        {!showPayment?(
+            <TouchableOpacity style={styles.buttonRed} onPress={togglePayment}>
+              <Text>Scan Qr</Text>
+            </TouchableOpacity>
+        ): (
+          <View style={styles.cameraContainer}>
+             <CameraView
+        onBarcodeScanned={scanned ? undefined : checkout}
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr", "pdf417"],
+        }}
+        style={StyleSheet.absoluteFillObject}
+      />
+     {scanned && (
+  navigation.navigate('VendorHomeScreen')
+)}
+
+      {!scanned && (
+        <TouchableOpacity style={styles.buttonRed} onPress={() => setScanned(true)}>
+          <Text>Scan Again</Text>
+        </TouchableOpacity>
+      )}
+
+          </View>
+        )
+        }
+      
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -180,6 +223,12 @@ containerSell: {
   flexDirection: 'row',
   justifyContent: 'space-evenly',
 },
+containerScan: {
+  width: '90%',
+  marginTop: 15,
+  flexDirection: 'row',
+  justifyContent: 'space-evenly',
+},
 image: {
   width: 100,
   height: 100,
@@ -213,5 +262,14 @@ buttonOne: {
   },
   shadowRadius: 6,
   marginTop: 20,
+},
+cameraContainer: {
+  flex: 1,
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'black',
+  width: '100%',
+  height: '100%',
 },
 })

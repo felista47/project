@@ -3,35 +3,34 @@ import { StyleSheet, Text, View,Image, TouchableOpacity, TextInput,KeyboardAvoid
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-const Parent = () => {
-  const { userEmail } = useAuth();
-  const [parentData, setParentData] = useState(null);
+const ShopFinance = () => {
+  const {userEmail } = useAuth();
+  const [vendorData, setVendorData] = useState(null);
   const [editable, setEditable] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, [userEmail]);
-
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
-      const parent = response.data;
-      setParentData(parent);
-      console.log(parentData)
-    } catch (error) {
-      console.error('Error fetching parent data:', error);
+      const response = await axios.get(`https://pocket-money.up.railway.app/vendor/${userEmail}`,{ timeout: 5000 });
+      const vendor = response.data;
+      setVendorData(vendor); 
+       } 
+    catch (error) {
+      console.error('Error fetching user data:', error);
     }
   };
 
   const handleUpdate = async () => {
     try {
-      const response =await axios.patch(`https://pocket-money.up.railway.app/parent/${userEmail}`, parentData);
+      const response =await axios.put(`https://pocket-money.up.railway.app/vendor/${userEmail}`, vendorData);
       setEditable(false);
-      const parent =response.data
-      setParentData(parent);
+      const vendor =response.data
+      setVendorData(vendor);
       console.log('data after update',response.data)
     } catch (error) {
-      console.error('Error updating parent data:', error);
+      console.error('Error updating vendor data:', error);
     }
   };
 
@@ -40,35 +39,24 @@ const Parent = () => {
   };
 
   const handleCancelPress = () => {
-    setParentData(parentData); // Reset to original data
+    setVendorData(vendorData); // Reset to original data
     setEditable(false);
   };
 
   const handleInputChange = (field, value) => {
-    let updatedParentData = { ...parentData };
-  
-    // Check if the field belongs to personalInfo or parentalDetails
-    if (field in updatedParentData.personalInfo) {
-      updatedParentData = {
-        ...updatedParentData,
-        personalInfo: {
-          ...updatedParentData.personalInfo,
-          [field]: value,
-        },
-      };
-    } else if (field in updatedParentData.parentalDetails) {
-      updatedParentData = {
-        ...updatedParentData,
-        parentalDetails: {
-          ...updatedParentData.parentalDetails,
+    let updatedVendorData = { ...vendorData};
+      if (field in updatedVendorData.paymentDetails) {
+      updatedVendorData = {
+        ...updatedVendorData,
+        paymentDetails: {
+          ...updatedVendorData.paymentDetails,
           [field]: value,
         },
       };
     }
-    setParentData(updatedParentData);
+    setVendorData(updatedVendorData);
   };
-  
-
+ 
   const renderTextInput = (label, value, field) => {
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.inputContainer}>
@@ -83,9 +71,7 @@ const Parent = () => {
     );
   };
   
-
-
-  if (!parentData) {
+  if (!vendorData) {
     return (
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
@@ -93,18 +79,15 @@ const Parent = () => {
     );
   }
 
-  return (
+return (
 <KeyboardAvoidingView behavior="padding" style={styles.mainContainer}>
   <View style={styles.parentProfile}>
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
   </View>
   <View style={styles.parentData}>
-    {renderTextInput('ID', parentData.personalInfo.id, 'id')}
-    {renderTextInput('Name', parentData.personalInfo.name, 'name')}
-    {renderTextInput('Phone Number', parentData.personalInfo.phoneNumber, 'phoneNumber')}
-    {renderTextInput('Home Address', parentData.personalInfo.homeAddress, 'homeAddress')}
-    {renderTextInput('Parent Relationship', parentData.parentalDetails.parentRelationship, 'parentRelationship')}
+    {renderTextInput('Till name', vendorData.paymentDetails.tillName, 'tillName')}
+    {renderTextInput('Till Number', vendorData.paymentDetails.tillNumber, 'tillNumber')}
   </View>
   <View style={styles.buttonContainer}>
     <TouchableOpacity style={styles.button} onPress={editable ? handleUpdate : toggleEdit}>
@@ -118,6 +101,7 @@ const Parent = () => {
   </View>
 </KeyboardAvoidingView>
 )}
+
 const styles = StyleSheet.create({
   mainContainer: {
     padding: '5%',
@@ -185,7 +169,7 @@ fontWeight:'bold'
     shadowRadius: 6,
   },
   textInput: {
-   
+    
     color:'black',
   
     paddingHorizontal: 10,
@@ -193,4 +177,5 @@ fontWeight:'bold'
   },
 });
 
-export default Parent;
+export default ShopFinance
+

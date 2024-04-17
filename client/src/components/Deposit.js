@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import React, { useState, useEffect} from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View,KeyboardAvoidingView} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios';
@@ -11,9 +11,25 @@ const Deposit = ({ navigation }) => {
   const {userEmail} = useAuth();
   const [phone, setPhone] = useState("");
   const [amount,setAmount] = useState("");
+  const[studentData, setStudentData] =useState(null)
   const [token,setToken]=useState("")
   const [trackingId,setTrackingId]=useState("")
 
+
+  useEffect(() => {
+    fetchData();
+  }, [userEmail]);
+
+  const fetchData = async () => {
+    try {
+      const response =await axios.get(`https://pocket-money.up.railway.app/student/parent/${userEmail}`);
+      const student = response.data;
+      setStudentData(student);
+      console.log('children data:',studentData);
+    } catch (error) {
+      console.error('Error fetching parents children data:', error);
+    }
+  };
   // creates a token and registers IPN for pesapal transactions
   const createTokenAndRegisterIPN = async () => {
       const data = JSON.stringify({
@@ -130,6 +146,7 @@ const Deposit = ({ navigation }) => {
                 "Authorization": `Bearer ${token}`
             }
         });
+      
   
         console.log("Transaction status:", response.data);
         const paymentStatusCode = response.data.payment_status_description;
@@ -151,13 +168,17 @@ const Deposit = ({ navigation }) => {
         await axios.post(`https://pocket-money.up.railway.app/transactions`,transactionData)
           const depAmount =response.data.amount
           const balAmount = { BalAmount: depAmount };
-          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/5445`,balAmount);
+          console.log("deb update: before", balAmount);
+
+          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/${studentData[0].studentID}`,balAmount);
           console.log("deb update:", depositRes.data );
             alert("The payment was successful.");
             navigation.navigate('HomeScreen');
         } else if(paymentStatusCode === "INVALID") {
            alert("Unknown payment status. kindly try again");
            setShowConfirmation(false)
+           setShowVerify(false)
+
         }
           } catch (error) {
         console.error("Error retrieving transaction status:", error.message);
@@ -166,7 +187,7 @@ const Deposit = ({ navigation }) => {
 
 
   return (
-    <View>
+    <View behavior="padding">
 {!showConfirmation ? ( // Display deposit details form
   <View style={styles.DepContainerOne}>
     <Text style={styles.DepContainerOneText}>Deposit Cash</Text>

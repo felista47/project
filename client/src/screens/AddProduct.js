@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Image, StyleSheet } from 'react-native';
+import { View, TextInput, Button, Image, StyleSheet ,KeyboardAvoidingView} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {Picker} from '@react-native-picker/picker'
 import axios from 'axios';
@@ -62,7 +62,7 @@ const AddProduct = () => {
       
       });
   
-      console.log('Product added successfully:',);
+      console.log('Product added successfully:',response.data);
   
       // Clear form fields after adding the product
       setProduct({
@@ -74,8 +74,8 @@ const AddProduct = () => {
         productAmount: '',
       });
       
+        navigation.navigate('Products'); 
       
-  
       alert('Product added successfully!');
     } catch (error) {
       console.error('Error adding product:', error);
@@ -85,7 +85,7 @@ const AddProduct = () => {
   
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView  behavior="padding" style={styles.container}>
 {product.productImage && <Image source={{ uri: product.productImage}} style={styles.image} />}
       <Button title="Pick an image from camera roll" onPress={pickImage} />
       <TextInput
@@ -119,13 +119,16 @@ const AddProduct = () => {
       />
 
       <Button title="Add Product" onPress={handleAddProduct} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+flex:1,
+paddingTop: '5%',
+    justifyContent:'space-evenly',
+    backgroundColor:'#ECF6FC',
   },
   input: {
     height: 40,

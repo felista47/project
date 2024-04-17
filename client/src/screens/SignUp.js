@@ -19,7 +19,7 @@ const SignUpScreen  = ({ navigation }) => {
   const createAccount = async () => {
     try {
       console.log(user, accountType);
-      const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`, user);
+      const response = await axios.post(`https://pocket-money.up.railway.app/${accountType}/signUp`,user);
       console.log('data received from signup response', response.data);
       const userEmailResponse = response.data.email;
       setUser({
@@ -30,16 +30,22 @@ const SignUpScreen  = ({ navigation }) => {
       alert('Registered successfully!');
       navigation.navigate('SignIn');
       console.log('signup', accountType, userEmailResponse);
-    } catch (error) {
-      console.error('Error registering:', error);
-      const errorMessage = error.response.data.error
+    }catch (error) {
+      console.error(error);
+      let errorMessage = 'An error occurred while signup in.';
+     if (error.response && error.response.data && error.response.data.errors) {
+          errorMessage = error.response.data.errors;
+      } else if (error.response && error.response.status === 500) {
+          errorMessage = 'Internal server error. Please try again later.';
+      }
       alert(errorMessage);
-    }
+  }
+  
   };
   
 
   return (
-    <KeyboardAvoidingView style={styles.container}>
+    <KeyboardAvoidingView  behavior="padding" style={styles.container}>
       <View style={styles.credentials}>
 
         <View style={styles.inputContainer}>
@@ -106,7 +112,7 @@ input:{
 
   text:{
     marginTop:'4%',
-    fontSize: 20,
+    fontSize: 12,
     fontFamily: 'Roboto',
     fontWeight: 'light'
   },
@@ -147,7 +153,7 @@ buttonOne:{
  dontHave:{
   fontFamily:'Roboto',
   fontWeight: 'bold',
-fontSize: 32
+fontSize: 24
 
  },
 socials:{

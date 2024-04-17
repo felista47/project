@@ -1,9 +1,8 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React,{useEffect} from 'react';
+import React from 'react';
 import { useNavigation } from '@react-navigation/native'; 
 import { useAuth } from '../context/AuthContext'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 
 
 const WelcomeScreen = () => {
@@ -104,7 +103,8 @@ const styles = StyleSheet.create({
     fontFamily:'Roboto',
     fontWeight: 'bold',
     fontStyle:'italic',
-    color:'#343a40'
+    color:'#343a40',
+    alignSelf:'center'
   },
   text:{
     padding: '5%',
@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   accountImage: {
-    margin: '5%',
+    margin: '2%',
     borderRadius: 20,
-    height: 150,
+    height: '40%',
     width: 150,
   },
 });

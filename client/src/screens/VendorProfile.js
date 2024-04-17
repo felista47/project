@@ -1,51 +1,44 @@
 import { StyleSheet, Text, View, TouchableOpacity,Image,ScrollView,} from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { faBell,faChartPie,faChildren,faGears,faQuestion, faScroll, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faBell,faChildren,faGears,faQuestion,faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
-const ProfileScreen = () => {
+const VendorProfile = () => {
   const { accountType,userEmail,setAuthData} = useAuth();
+  const [vendor, setVendor] = useState(null);
   const navigation = useNavigation();
-  const [parent, setParent] = useState(null);
 
-  const navigateToParent = () => {
-    navigation.navigate('Parent'); 
-    console.log('profile',accountType,userEmail)
-
-  };
-  const navigateToChild = () => {
-    navigation.navigate('Child'); 
-    console.log('profile',accountType,userEmail)
-
-  };
-  const navigateToFinance = () => {
-    navigation.navigate('Finance'); 
-
-  };
 
   useEffect(() => {
     fetchData();
   }, [accountType, userEmail,]);
 
-    const fetchData = async () => {
-    console.log('profileBefore fetch',accountType,userEmail)
+  const navigateToVendor = () => {
+    navigation.navigate('Vendor'); 
+    console.log('profile',accountType,userEmail)
 
+  };
+  const navigateToShop = () => {
+    navigation.navigate('Shop'); 
+    console.log('profile',accountType,userEmail)
+
+  };
+  const navigateToShopFinance = () => {
+    navigation.navigate('ShopFinance'); 
+
+  };
+  const fetchData = async () => {
     try {
-      const response = await axios.get(`https://pocket-money.up.railway.app/parent/${userEmail}`, { timeout: 5000 });
-      const parentData = response.data;
-
-      if (Array.isArray(parentData) && parentData.length === 0) {
-        setParent({}); // Set to an empty object for editing
-      } else {
-        setParent(parentData);
-      }    } catch (error) {
-      console.error('Error fetching parent profile data:', error);
+      const response = await axios.get(`https://pocket-money.up.railway.app/vendor/${userEmail}`,{ timeout: 5000 });
+      const vendorData = response.data;
+      setVendor(vendorData); 
+       } 
+    catch (error) {
+      console.error('Error fetching user data:', error);
     }
   };
 
@@ -60,49 +53,33 @@ const ProfileScreen = () => {
     }
   };
   
-
-
-  if (!parent) {
+  if (!vendor) {
     return <Text>Loading...</Text>;
   }
-
   return (
-<ScrollView style={styles.mainContainer}>
-   <Text style={styles.mainContainerName}>ACCOUNT</Text>
-   <View style={styles.accContainerOne}>
-      <View style={styles.containerProfile}>
-          {/* profile pic */}
-          <TouchableOpacity style={styles.avatar}>
-            <Image style={styles.image} source={require('../../assets/avatar.png')} />
-          </TouchableOpacity>
-          {/* USER GREETINGS */}
-   <View style={styles.userMinInfo}>
-      <Text style={styles.text}>{userEmail}</Text>
-      {/* <Text>{parent.personalInfo.phoneNumber}</Text> */}
-   </View>
+    <ScrollView style={styles.mainContainer}>
+    <Text style={styles.mainContainerName}>ACCOUNT</Text>
 
-      </View>
-      <TouchableOpacity style={styles.ButtonGreen}><Text>Edit picture</Text></TouchableOpacity>
-   </View>
+  {/* profile pic */}
+    <View style={styles.accContainerOne}>
+       <View style={styles.containerProfile}>
+           {/* profile pic */}
+           <TouchableOpacity style={styles.avatar}>
+           <Image style={styles.image} source={require('../../assets/avatar.png')} />
+           </TouchableOpacity>
+           {/* USER GREETINGS */}
+    <View style={styles.userMinInfo}>
+       <Text style={styles.text}>{userEmail}</Text>
+       {/* <Text>{parent.personalInfo.phoneNumber}</Text> */}
+    </View>
+ 
+       </View>
+       <TouchableOpacity style={styles.ButtonGreen}><Text>Edit picture</Text></TouchableOpacity>
+    </View>
 
-   <View style={styles.accContainerTwo}>
-      <View>
-      <TouchableOpacity style={styles.ButtonBlue}>
-        <FontAwesomeIcon icon={ faScroll }/>
-      </TouchableOpacity>
-      <Text style={styles.buttonText}>Transaction Statement</Text>
-      </View>
-      <View>
-        <TouchableOpacity style={styles.ButtonRed}>
-          <FontAwesomeIcon icon={ faChartPie }/>
-        </TouchableOpacity>
-        <Text style={styles.buttonText}>My Spend</Text>
-      </View>
-    
-   </View>
 
    {/* link to parent personal account info */}
-   <TouchableOpacity style={styles.accItem} onPress={navigateToParent}>
+   <TouchableOpacity style={styles.accItem}onPress={() =>navigateToVendor()}>
       <View  style={styles.accItemIcon} >
         <FontAwesomeIcon icon={ faUser }/>
       </View>
@@ -112,34 +89,34 @@ const ProfileScreen = () => {
       </View>
     </TouchableOpacity>
     
-    <TouchableOpacity style={styles.accItem}onPress={navigateToChild}>
+    <TouchableOpacity style={styles.accItem} onPress={() =>navigateToShop()}>
       <View  style={styles.accItemIcon} >
         <FontAwesomeIcon icon={ faChildren }/>
       </View>
       <View>
-        <Text>Child Details</Text>
-        <Text>student details,edit details</Text>
+        <Text>Shop Details</Text>
+        <Text>Shop details,edit details</Text>
       </View> 
     </TouchableOpacity>
-    <TouchableOpacity style={styles.accItem} onPress={navigateToFinance}>
+    <TouchableOpacity style={styles.accItem} onPress={() =>navigateToShopFinance()}>
       <View  style={styles.accItemIcon} >
         <FontAwesomeIcon icon={ faUser }/>
       </View>
       <View>
         <Text>financial Information</Text>
-        <Text>Allowance details, set allowance limit</Text>
+        <Text>shop balance, Transaction Statement</Text>
       </View>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.accItem}>
+    {/* <TouchableOpacity style={styles.accItem}>
       <View  style={styles.accItemIcon} >
       <FontAwesomeIcon icon={ faBell }/>
       </View>
       
       <View>
         <Text>Notification</Text>
-        <Text>spending notification</Text>
+        <Text> notification</Text>
       </View>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
 
     <TouchableOpacity style={styles.accItem}>
       <View  style={styles.accItemIcon} >
@@ -163,12 +140,11 @@ const ProfileScreen = () => {
     </TouchableOpacity>
 
     <TouchableOpacity style={styles.accButtonRed}onPress={signOut}><Text>LogOut</Text></TouchableOpacity>
- 
-  </ScrollView>
-  );
-};
+    </ScrollView>
+  )
+}
 
-export default ProfileScreen;
+export default VendorProfile
 
 const styles = StyleSheet.create({
   

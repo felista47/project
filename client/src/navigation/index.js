@@ -13,6 +13,11 @@ import VendorHomeScreen from '../screens/VendorHomeScreen';
 import SignUp from '../screens/SignUp';
 import Child from '../components/Child';
 import Finance from '../components/Finance';
+import VendorProfile from '../screens/VendorProfile';
+import Shop from '../components/Shop'
+import Vendor from '../components/Vendor'
+import ShopFinance from '../components/ShopFinance'
+import QR from '../components/QR'
 
 const Stack = createStackNavigator();
 
@@ -33,6 +38,11 @@ const MainNavigator = () => {
       <Stack.Screen name="AddProduct" component={AddProduct} options={{ headerShown: false}} />
       <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false}} />  
       <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false}} />
+      <Stack.Screen name="VendorProfile" component={VendorProfile} options={{ headerShown: false}} />
+      <Stack.Screen name="Shop" component={Shop} options={{ headerShown: false}} />
+      <Stack.Screen name="ShopFinance" component={ShopFinance} options={{ headerShown: false}} />
+      <Stack.Screen name="Vendor" component={Vendor} options={{ headerShown: false}} />
+      <Stack.Screen name="GenerateQr" component={QR} options={{ headerShown: false}} />
 
     </Stack.Navigator>
   );

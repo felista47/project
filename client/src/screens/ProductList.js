@@ -1,7 +1,7 @@
 import React, { useState ,useEffect} from 'react';
 import axios from 'axios';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View, TouchableOpacity,ScrollView ,Image,TextInput} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,ScrollView ,Image,TextInput,KeyboardAvoidingView} from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { addToCart} from "../reduxStore/reducers/CartReducer";
 import { useNavigation } from '@react-navigation/native';
@@ -75,7 +75,7 @@ const handleSearch = async () => {
 
  
   return (
-    <View style={styles.containerMain}>
+    <KeyboardAvoidingView behavior="padding" style={styles.containerMain}>
 
       <View style={styles.search}>
             <View style={styles.inputSection}>
@@ -127,7 +127,8 @@ const handleSearch = async () => {
 
       <ScrollView style={styles.containerFive}>
 
-          {products.map((item,) => (
+          {products.length>0?( 
+          products.map((item,) => (
             <View key={item._id} style={styles.productContainer}>
             <Image source={{ uri: item.productImage }} style={styles.image} />
             <View>
@@ -142,11 +143,17 @@ const handleSearch = async () => {
             
 
             </View>
-        ))}
+        ))
+      ):(
+        <View style={styles.transactionItem}>
+        <Text>Your products will appear here</Text>
+      </View>
+      )
+      }
         
       </ScrollView>
    )}
-   </View>
+   </KeyboardAvoidingView>
   );
 }
 const styles = StyleSheet.create({

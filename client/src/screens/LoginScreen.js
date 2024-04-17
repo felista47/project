@@ -1,13 +1,12 @@
-import { View, Text,TextInput,StyleSheet,TouchableHighlight,TouchableOpacity, Alert } from 'react-native'
+import { View, Text,TextInput,StyleSheet,TouchableHighlight,TouchableOpacity, KeyboardAvoidingView} from 'react-native'
 import React, {useState} from 'react'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LoginScreen = ({ navigation}) => {
-  const { accountType,token,setAuthData} = useAuth();
+  const { accountType,setAuthData} = useAuth();
   const [user, setUser] = useState({
     email: '',
     password: '',
@@ -29,19 +28,31 @@ const LoginScreen = ({ navigation}) => {
       const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
       navigation.navigate(homeScreen);
       console.log('login', accountType, userEmailResponse);
-      } catch (error) {
-        console.error('Error logging in:', error);
-        const errorMessage = error.response.data.error
+      }catch (error) {
+        console.error('Error logging in:', error ,error.response.data.error);
+        let errorMessage = 'An error occurred while logging in.';
+       if (error.response && error.response.data && error.response.data.errors) {
+            errorMessage = error.response.data.errors;
+        } else if (error.response && error.response.status === 400) {
+            errorMessage = 'Please check your inputs.';
+        } else if (error.response && error.response.status === 401) {
+            errorMessage = 'Please check your credentials.';
+        } else if (error.response && error.response.status === 404) {
+            errorMessage = 'user not found.';
+        } else if (error.response && error.response.status === 500) {
+            errorMessage = 'Internal server error. Please try again later.';
+        }
         alert(errorMessage);
-      }
+    }
+    
   };
   
  
   
   return (
-    <View style={styles.container} >
+    <KeyboardAvoidingView behavior="padding" style={styles.container} >
       <Text>You are Signing In as a {accountType}</Text>
-      <View style={styles.credentials}>
+      <KeyboardAvoidingView style={styles.credentials}>
         <View style={styles.inputContainer}>
         <Ionicons name="mail" size={32} color="green" style={styles.icon}/>
       <TextInput style={styles.input} placeholder="Email" value={user.email} onChangeText={(text) =>setUser({ ...user,email:text })}/>
@@ -55,7 +66,7 @@ const LoginScreen = ({ navigation}) => {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
       <Text style={{ color: 'white', textAlign: 'center' }}>Login</Text>
     </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
 
        <View>
        <Text style={styles.dontHave}>Don't have an account?</Text>
@@ -65,14 +76,7 @@ const LoginScreen = ({ navigation}) => {
     </TouchableOpacity>
     </View>
 
-       <View style={styles.loginOptions}>
-       <TouchableHighlight  style={styles.socials}><Ionicons name="logo-google" color="white"/></TouchableHighlight>
-       <TouchableHighlight  style={styles.socials}><Ionicons name="logo-twitter" color="white"/></TouchableHighlight>
-       <TouchableHighlight  style={styles.socials}><Ionicons name="logo-facebook" color="white"/></TouchableHighlight>
-       </View>
-        
-
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -111,7 +115,7 @@ input:{
 
   text:{
     marginTop:'4%',
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Roboto',
     fontWeight: 'light'
   },
@@ -152,7 +156,7 @@ buttonOne:{
  dontHave:{
   fontFamily:'Roboto',
   fontWeight: 'bold',
-fontSize: 32
+  fontSize: 24
 
  },
 socials:{

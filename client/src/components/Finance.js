@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity,TextInput,Image,KeyboardAvoidingView} from 'react-native';
 import { faEdit,faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import React, { useState, useEffect } from 'react';
@@ -59,7 +59,7 @@ const Finance = ({navigation}) => {
 
     const renderTextInput = (label, value, field, studentID) => {
       return (
-        <View style={styles.inputContainerBal}>
+        <KeyboardAvoidingView behavior="padding" style={styles.inputContainerBal}>
           <Text>{label}</Text>
           <TextInput
             value={value}
@@ -79,7 +79,7 @@ const Finance = ({navigation}) => {
   )}
 </View>
 
-        </View>
+        </KeyboardAvoidingView>
       );
     };
     
@@ -95,7 +95,7 @@ const Finance = ({navigation}) => {
 
     
 return (
-  <View style={styles.mainContainer}>
+  <KeyboardAvoidingView behavior="padding" style={styles.mainContainer}>
     <View style={styles.studentProfile}>
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
@@ -116,12 +116,14 @@ return (
           </View>
 
           {renderTextInput('Allowance Limit: ', student.AllowanceLimit.toString(), 'AllowanceLimit', student.studentID)}
-          {renderTextInput('Daily Limit: ', student.DailyLimit.toString(), 'AllowanceLimit', student.studentID)}
+          {renderTextInput('Daily Limit: ', student.DailyLimit.toString(), 'DailyLimit', student.studentID)}
           {renderTextInput('Allowance Frequency', student.Frequency, 'Frequency', student.studentID)}
+
+
         </View>
       ))}
     </View>
-  </View>
+  </KeyboardAvoidingView>
 );
 
 };

@@ -1,7 +1,6 @@
-import { StyleSheet, Text, View, Image,TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image,TouchableOpacity,KeyboardAvoidingView } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { faBell,faChartPie} from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import ProductList from './ProductList';
 import { useAuth } from '../context/AuthContext'
@@ -10,6 +9,7 @@ const VendorHomeScreen = ({navigation}) => {
 
   const { accountType,userEmail} = useAuth();
   const [greeting, setGreeting] = useState('');
+  const [vendor, setVendor] = useState(null);
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -24,7 +24,6 @@ const VendorHomeScreen = ({navigation}) => {
   }, []); 
   
   //fetch vendor data function
-  const [vendor, setVendor] = useState(null);
   useEffect(() => {
     fetchData();
   }, [accountType, userEmail]);
@@ -39,17 +38,21 @@ const VendorHomeScreen = ({navigation}) => {
       console.error('Error fetching user data:', error);
     }
   };
-
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
   if (!vendor) {
     return <Text>Loading...</Text>;
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
        <View style={styles.containerOne}>
-            <TouchableOpacity style={styles.containerProfile}>
+            <TouchableOpacity style={styles.containerProfile} onPress={()=>navigation.navigate('VendorProfile')}>
               {/* profile pic */}
-              <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('Profile')}>
+              <TouchableOpacity style={styles.avatar} onPress={()=>navigation.navigate('VendorProfile')}>
                 <Image style={styles.image} source={require('../../assets/avatar.png')} />
               </TouchableOpacity>
               {/* USER GREETINGS */}
@@ -59,13 +62,13 @@ const VendorHomeScreen = ({navigation}) => {
               </View>
             </TouchableOpacity>
             <View style={styles.containerIcons}>
-              <FontAwesomeIcon icon={ faBell } />
-              <FontAwesomeIcon icon={ faChartPie } />
+           <Text>Balance</Text>
+           <Text>KSH.{vendor.shopBal}</Text>
             </View>
        </View>
       <ProductList/>
     
-      </View>
+      </KeyboardAvoidingView>
   );
   }
   export default VendorHomeScreen
@@ -76,13 +79,13 @@ const styles = StyleSheet.create({
     backgroundColor : "#ECF6FC",
   },
     containerOne: {
-      paddingTop:40,
+      paddingTop:30,
+      paddingHorizontal:'2%',
       justifyContent: 'space-between',
       flexDirection: 'row',
       alignItems: 'center',
     },
     containerProfile:{
-      padding:10,
       justifyContent: 'space-between',
       flexDirection: 'row',
       alignItems: 'center',
@@ -101,9 +104,12 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
     },
     containerIcons:{
-      flexDirection:'row',
+      elevation: 5,
       justifyContent:'space-evenly',
-      width:'50%'
+      backgroundColor:'white',
+      height:'30%',
+      width:'20%',
+      alignItems: 'center'
     },
   buttonOne:{
     borderRadius: 20,
