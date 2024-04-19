@@ -169,10 +169,10 @@ const Deposit = ({ navigation }) => {
         await axios.post(`https://pocket-money.up.railway.app/transactions`,transactionData)
           const depAmount =response.data.amount
           const balAmount = { BalAmount: depAmount };
-          console.log("deb update: before", balAmount);
+          console.log("deb update: before", balAmount,studentData[0].studentID);
 
-          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/checkout/student/deposit/${studentData[0].studentID}`,balAmount);
-          console.log("deb after update:", depositRes.data );
+          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/deposit/${studentData[0].studentID}`,balAmount);
+          console.log("deb after update:", depositRes.data);
             alert("The payment was successful.");
             navigation.navigate('HomeScreen');
         } else if(paymentStatusCode === "INVALID") {

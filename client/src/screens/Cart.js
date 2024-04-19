@@ -57,14 +57,20 @@ const Cart = () => {
   };
 
   const togglePayment = () => {
-    setShowPayment(!showPayment);
+    try{
+      setShowPayment(!showPayment);
+    }
+    catch(error){
+      console.error('toggle', error);
+
+    }
+   
   };
 
 const changeStudentID = async (data) => {
   try {
     setStudentID(data.data);
     console.log('Scanned data:', data.data,studentID);
-    await checkout();
   } catch (error) {
     if (error.response) {
       setScanned(true);
@@ -86,7 +92,6 @@ const changeStudentID = async (data) => {
       console.log('Data after student update:', response.data);
       dispatch(clearCart());
       alert('Payment made successfully!');
-      setScanned(true);
       setShowPayment(false);
       console.log('Data before update:', { shopBal: balAmount, userEmail});
       const shopBal = await axios.put(`https://pocket-money.up.railway.app/vendor/${userEmail}`, {shopBal: balAmount});
@@ -94,10 +99,8 @@ const changeStudentID = async (data) => {
       navigation.navigate('VendorHomeScreen');
     } catch (error) {
       if (error.response) {
-        setScanned(true);
-        // If the error has a response, it means the server returned an error response
         const errorMessage = error.response.data.message;
-        alert(errorMessage); // Display the error message to the user
+        alert(errorMessage);
       } else {
         // If the error does not have a response, it's likely a network error
         console.error('Network error:', error.message);
@@ -107,70 +110,81 @@ const changeStudentID = async (data) => {
   };
   
   
-
-  return (
-    <KeyboardAvoidingView behavior="padding" style={styles.containerMain}>
-      <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>Cart Items:</Text>
-      {cart.map((item) => (
-        <View key={item._id} style={styles.productContainer}>
-          <Image source={{ uri: item.productImage }} style={styles.image} />
-          <View>
-            <Text>{item.productName}</Text>
+    return (
+      <KeyboardAvoidingView behavior="padding" style={styles.containerMain}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>Cart Items:</Text>
+        {cart.map((item) => (
+          <View key={item._id} style={styles.productContainer}>
+            <Image source={{ uri: item.productImage }} style={styles.image} />
+            <View>
+              <Text>{item.productName}</Text>
+            </View>
+            <Text>Ksh: {item.productAmount}</Text>
+            <TouchableOpacity style={styles.buttonCart} onPress={() => increaseQuantity(item)}>
+              <Ionicons name="add" size={24} color='black'></Ionicons>
+            </TouchableOpacity>
+            <Text>{item.quantity}</Text>
+            <TouchableOpacity style={styles.buttonCart} onPress={() => decreaseQuantity(item)}>
+              <Feather name="minus" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonCart} onPress={() => removeItemFromCart(item)}>
+              <Ionicons name="trash" size={24} color='black'></Ionicons>
+            </TouchableOpacity>
           </View>
-          <Text>Ksh: {item.productAmount}</Text>
-          <TouchableOpacity style={styles.buttonCart} onPress={() => increaseQuantity(item)}>
-            <Ionicons name="add" size={24} color='black'></Ionicons>
-          </TouchableOpacity>
-          <Text>{item.quantity}</Text>
-          <TouchableOpacity style={styles.buttonCart} onPress={() => decreaseQuantity(item)}>
-            <Feather name="minus" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonCart} onPress={() => removeItemFromCart(item)}>
-            <Ionicons name="trash" size={24} color='black'></Ionicons>
-          </TouchableOpacity>
+        ))}
+        <View style={styles.productContainer}>
+          <Text>Total Items: {cart.length}</Text>
+          <Text>Total Price: KSH.{totalPrice.toFixed(2)}</Text>
         </View>
-      ))}
-      <View style={styles.productContainer}>
-        <Text>Total Items: {cart.length}</Text>
-        <Text>Total Price: KSH.{totalPrice.toFixed(2)}</Text>
-      </View>
-      <View style={styles.containerSell}>
-          <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
-          <Text>Continue Selling</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.containerScan}>
-        {!showPayment?(
+        <View style={styles.containerSell}>
+            <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
+            <Text>Continue Selling</Text>
+          </Pressable>
+        </View>
+  
+        <View style={styles.containerScan}>
+          {!showPayment ? (
             <TouchableOpacity style={styles.buttonRed} onPress={togglePayment}>
               <Text>Scan Qr</Text>
             </TouchableOpacity>
-        ): (
-          <View style={styles.cameraContainer}>
-            <CameraView
-  onBarcodeScanned={(data) => scanned ? undefined : changeStudentID(data)}
-  barcodeScannerSettings={{
-    barcodeTypes: ["qr", "pdf417"],
-  }}
-  style={StyleSheet.absoluteFillObject}
-/>
-     {scanned && (
-  navigation.navigate('VendorHomeScreen')
-)}
-
-      {/* {!scanned && (
-        <TouchableOpacity style={styles.buttonRed} onPress={() => setScanned(true)}>
-          <Text>Scan Again</Text>
-        </TouchableOpacity>
-      )} */}
-
+          ) : (
+            <View style={styles.cameraContainer}>
+            {hasPermission === null ? (
+              <Text>Requesting for camera permission</Text>
+            ) : hasPermission === false ? (
+              <Text>No access to camera</Text>
+            ) : (
+              <CameraView
+                onBarcodeScanned={(data) => {
+                  try {
+                    if (!scanned) {
+                      changeStudentID(data);
+                    }
+                  } catch (error) {
+                    console.error('An error occurred:', error);
+                  }
+                }}
+                barcodeScannerSettings={{
+                  barcodeTypes: ["qr", "pdf417"],
+                }}
+                style={StyleSheet.absoluteFillObject}
+              />
+            )}
+            {scanned && studentID && (
+              <View>
+                <TouchableOpacity onPress={checkout}>
+                  <Text>PAY</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        )
-        }
-      
-      </View>
-    </KeyboardAvoidingView>
-  );
+          
+          )}
+        </View>
+      </KeyboardAvoidingView>
+    );
+
+  
 }
 
 export default Cart;
