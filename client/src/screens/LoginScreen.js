@@ -50,7 +50,7 @@ const LoginScreen = ({ navigation}) => {
  
   
   return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container} >
+    <View behavior="padding" style={styles.container} >
       <Text>You are Signing In as a {accountType}</Text>
       <KeyboardAvoidingView style={styles.credentials}>
         <View style={styles.inputContainer}>
@@ -76,7 +76,7 @@ const LoginScreen = ({ navigation}) => {
     </TouchableOpacity>
     </View>
 
-    </KeyboardAvoidingView>
+    </View>
   )
 }
 

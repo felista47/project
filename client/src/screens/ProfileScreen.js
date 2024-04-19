@@ -52,7 +52,7 @@ const ProfileScreen = () => {
   const signOut = async () => {
     try {
       await AsyncStorage.removeItem('authToken');
-      setAuthData(null,null, null);
+      setAuthData(null,null,null,null);
       navigation.navigate('WelcomeScreen');
       console.log('Token set to null');
     } catch (error) {

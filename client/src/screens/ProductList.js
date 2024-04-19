@@ -28,7 +28,7 @@ const ProductList=({})=> {
   };
   useEffect(() => {
     handleCategoryAll();
-    handleCategory('Food');
+    handleCategory('All');
   }, []);
   const handleCategoryAll = async () => {
     try {
@@ -146,7 +146,7 @@ const handleSearch = async () => {
         ))
       ):(
         <View style={styles.transactionItem}>
-        <Text>Your products will appear here</Text>
+        <Text>Your products in category{selectedCategory} will appear here</Text>
       </View>
       )
       }

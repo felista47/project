@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View,Image, TouchableOpacity, TextInput,KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, Text, View,Image, TouchableOpacity, TextInput,KeyboardAvoidingView, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -71,7 +71,7 @@ const Parent = () => {
 
   const renderTextInput = (label, value, field) => {
     return (
-      <KeyboardAvoidingView behavior="padding" style={styles.inputContainer}>
+      <View style={styles.inputContainer}>
         <Text>{label}</Text>
           <TextInput
             value={value}
@@ -79,7 +79,7 @@ const Parent = () => {
             editable={editable}
             style={styles.textInput}
           />
-      </KeyboardAvoidingView>
+      </View>
     );
   };
   
@@ -94,7 +94,7 @@ const Parent = () => {
   }
 
   return (
-<KeyboardAvoidingView behavior="padding" style={styles.mainContainer}>
+<ScrollView behavior="padding" style={styles.mainContainer}>
   <View style={styles.parentProfile}>
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
@@ -116,7 +116,7 @@ const Parent = () => {
       </TouchableOpacity>
     )}
   </View>
-</KeyboardAvoidingView>
+</ScrollView>
 )}
 const styles = StyleSheet.create({
   mainContainer: {
@@ -146,8 +146,8 @@ fontWeight:'bold'
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Distribute buttons evenly
-    marginBottom: 20, // Add some bottom margin
+    justifyContent: 'space-around',
+    marginBottom: 200, 
   },
   inputContainer: {
     marginTop: '10%',

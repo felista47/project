@@ -5,7 +5,7 @@ import {Picker} from '@react-native-picker/picker'
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
 
-const AddProduct = () => {
+const AddProduct = ({navigation}) => {
   const {userEmail} = useAuth();
 
   const [product, setProduct] = useState({
@@ -16,8 +16,12 @@ const AddProduct = () => {
       productCategory:'',
       productAmount:'',
   });
-
   useEffect(() => {
+    setProduct(prevProduct => ({ ...prevProduct, vendor: userEmail }));
+  }, [userEmail]);
+  
+
+    useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -54,7 +58,6 @@ const AddProduct = () => {
   
 
   const handleAddProduct = async () => {
-    setProduct(prevProduct => ({ ...prevProduct, vendor: userEmail }));
     try {
       console.log('product', userEmail,product);
 
@@ -64,7 +67,6 @@ const AddProduct = () => {
   
       console.log('Product added successfully:',response.data);
   
-      // Clear form fields after adding the product
       setProduct({
         vendor:'',
         productImage:'',
@@ -74,7 +76,7 @@ const AddProduct = () => {
         productAmount: '',
       });
       
-        navigation.navigate('Products'); 
+        navigation.navigate('VendorHomeScreen'); 
       
       alert('Product added successfully!');
     } catch (error) {
@@ -108,7 +110,7 @@ const AddProduct = () => {
             <Picker.Item label="Pick a category" value="" />
             <Picker.Item label="Food" value="Food" />
             <Picker.Item label="Stationery" value="stationery" />
-            <Picker.Item label="Other" value="Other" />
+            <Picker.Item label="others" value="others" />
           </Picker>
      <TextInput
         style={styles.input}

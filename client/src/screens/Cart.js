@@ -22,7 +22,6 @@ const Cart = () => {
   const [customer, setCustomer] = useState({
     BalAmount: 0
   });
-
   useEffect(() => {
     const getCameraPermissions = async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -30,18 +29,7 @@ const Cart = () => {
     };
     getCameraPermissions();
   }, []);
-  // if (hasPermission === null) {
-  //   return <Text>Requesting for camera permission</Text>;
-  // }
-  // if (hasPermission === false) {
-  //   return <Text>No access to camera</Text>;
-  // }
-  // const handleBarCodeScanned = ({ type, data }) => {
-  //   setScanned(true);
-  //   setStudentID(data);
-  //   alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-  //   checkout();
-  // };
+
   useEffect(() => {
     const price = cart.reduce((acc, item) => acc + item.productAmount * item.quantity, 0);
     setTotalPrice(price);
@@ -72,11 +60,28 @@ const Cart = () => {
     setShowPayment(!showPayment);
   };
 
-  const checkout = async ({data}) => {
+const changeStudentID = async (data) => {
+  try {
+    setStudentID(data.data);
+    console.log('Scanned data:', data.data,studentID);
+    await checkout();
+  } catch (error) {
+    if (error.response) {
+      setScanned(true);
+      const errorMessage = error.response.data.message;
+      alert(errorMessage);
+    } else {
+      console.error('Network error:', error.message);
+      alert('Network error. Please check your internet connection.');
+    }
+  }
+};
+
+
+  const checkout = async () => {
     try {
-      setStudentID(data);
       const balAmount = parseFloat(customer.BalAmount);
-      console.log('Data before update:', { BalAmount: balAmount, studentID: studentID });
+      console.log('Data before update:', { BalAmount: balAmount, studentID:studentID });
       const response = await axios.put(`https://pocket-money.up.railway.app/student/checkOut/${studentID}`, { BalAmount: balAmount });
       console.log('Data after student update:', response.data);
       dispatch(clearCart());
@@ -142,22 +147,22 @@ const Cart = () => {
             </TouchableOpacity>
         ): (
           <View style={styles.cameraContainer}>
-             <CameraView
-        onBarcodeScanned={scanned ? undefined : checkout}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr", "pdf417"],
-        }}
-        style={StyleSheet.absoluteFillObject}
-      />
+            <CameraView
+  onBarcodeScanned={(data) => scanned ? undefined : changeStudentID(data)}
+  barcodeScannerSettings={{
+    barcodeTypes: ["qr", "pdf417"],
+  }}
+  style={StyleSheet.absoluteFillObject}
+/>
      {scanned && (
   navigation.navigate('VendorHomeScreen')
 )}
 
-      {!scanned && (
+      {/* {!scanned && (
         <TouchableOpacity style={styles.buttonRed} onPress={() => setScanned(true)}>
           <Text>Scan Again</Text>
         </TouchableOpacity>
-      )}
+      )} */}
 
           </View>
         )

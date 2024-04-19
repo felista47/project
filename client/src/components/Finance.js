@@ -59,7 +59,7 @@ const Finance = ({navigation}) => {
 
     const renderTextInput = (label, value, field, studentID) => {
       return (
-        <KeyboardAvoidingView behavior="padding" style={styles.inputContainerBal}>
+        <View behavior="padding" style={styles.inputContainerBal}>
           <Text>{label}</Text>
           <TextInput
             value={value}
@@ -79,7 +79,7 @@ const Finance = ({navigation}) => {
   )}
 </View>
 
-        </KeyboardAvoidingView>
+        </View>
       );
     };
     
@@ -95,7 +95,7 @@ const Finance = ({navigation}) => {
 
     
 return (
-  <KeyboardAvoidingView behavior="padding" style={styles.mainContainer}>
+  <View behavior="padding" style={styles.mainContainer}>
     <View style={styles.studentProfile}>
       <Image style={styles.image} source={require('../../assets/avatar.png')} />
       <TouchableOpacity ><Text style={styles.editImage}>Edit Image</Text></TouchableOpacity>
@@ -123,7 +123,7 @@ return (
         </View>
       ))}
     </View>
-  </KeyboardAvoidingView>
+  </View>
 );
 
 };

@@ -141,6 +141,7 @@ const Deposit = ({ navigation }) => {
   // gets the transaction status after the payment is processed suscesfully or not
   const getTransactionStatus = async () => {
     try {
+      console.log(trackingId)
         const response = await axios.get(`https://cybqa.pesapal.com/pesapalv3/api/Transactions/GetTransactionStatus?orderTrackingId=${trackingId}`, {
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -170,8 +171,8 @@ const Deposit = ({ navigation }) => {
           const balAmount = { BalAmount: depAmount };
           console.log("deb update: before", balAmount);
 
-          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/${studentData[0].studentID}`,balAmount);
-          console.log("deb update:", depositRes.data );
+          const depositRes = await axios.put(`https://pocket-money.up.railway.app/student/checkout/student/deposit/${studentData[0].studentID}`,balAmount);
+          console.log("deb after update:", depositRes.data );
             alert("The payment was successful.");
             navigation.navigate('HomeScreen');
         } else if(paymentStatusCode === "INVALID") {
