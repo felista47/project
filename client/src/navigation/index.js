@@ -18,6 +18,7 @@ import Shop from '../components/Shop'
 import Vendor from '../components/Vendor'
 import ShopFinance from '../components/ShopFinance'
 import QR from '../components/QR'
+import QRScanner from '../components/QRScanner';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +44,7 @@ const MainNavigator = () => {
       <Stack.Screen name="ShopFinance" component={ShopFinance} options={{ headerShown: false}} />
       <Stack.Screen name="Vendor" component={Vendor} options={{ headerShown: false}} />
       <Stack.Screen name="GenerateQr" component={QR} options={{ headerShown: false}} />
+      <Stack.Screen name="QRScanner" component={QRScanner} options={{ headerShown: false}} />
 
     </Stack.Navigator>
   );

@@ -162,10 +162,12 @@ const HomeScreen = ({navigation}) => {
         </View>
         <View>
           <Text>{transaction.paymentAccount}</Text>
+          <Text>{transaction.confirmationCode}</Text>
+
         </View>
         <View>
           <Text>KSH. {transaction.Amount}</Text>
-          <Text>{transaction.createdAt}</Text>
+          <Text>{new Date(transaction.createdAt).toLocaleString()}</Text>
         </View>
       </View>
     ))

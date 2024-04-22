@@ -66,6 +66,7 @@ const VendorHomeScreen = ({navigation}) => {
            <Text>KSH.{vendor.shopBal}</Text>
             </View>
        </View>
+       <TouchableOpacity style={styles.containerProfile} onPress={()=>navigation.navigate('QRScanner')}><Text>scanner</Text></TouchableOpacity>
       <ProductList/>
     
       </KeyboardAvoidingView>

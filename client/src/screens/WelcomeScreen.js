@@ -9,48 +9,20 @@ const WelcomeScreen = () => {
   const navigation = useNavigation(); 
   const { setAuthData } = useAuth();
 
-  const checkUserSignInStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      const accountType=''
-      if (accountType) {
-        console.log('User already signed in');
-        const homeScreen = accountType === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
-        navigation.navigate(homeScreen) 
-        return true;
-      } else {
-        console.log('User not signed in');
-        return false;
-      }
-    } catch (error) {
-      // Handle error, e.g., user is not signed in
-      console.error('Error checking user sign-in status:', error);
-      return false;
-    }
-  };
   
   const handleAccountSelection = async (type) => {
-    try {
-      const isUserSignedIn = await checkUserSignInStatus();
-      if (isUserSignedIn) {
-        const homeScreen = type === 'parent' ? 'HomeScreen' : 'VendorHomeScreen';
-        navigation.navigate(homeScreen);
-      } else {
+ 
         if (type === 'parent') {
           await setAuthData('parent');
-          await AsyncStorage.setItem('account', type);
           navigation.navigate('SignIn');
         } else if (type === 'vendor') {
           await setAuthData('vendor');
           navigation.navigate('SignIn');
         }
+        console.log('accountType', type);
+
       }
-      console.log('accountType', type);
-    } catch (error) {
-      console.error('Error checking user sign-in status:', error);
-      navigation.navigate('SignIn');
-    }
-  }
+   
   
 
 
@@ -124,7 +96,6 @@ const styles = StyleSheet.create({
     },
     shadowRadius: 6,
   },
-
   account: {
     flex: 1,
     flexDirection: 'row',

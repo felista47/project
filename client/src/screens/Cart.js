@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput,Button,Pressable,KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity,Button,Pressable,KeyboardAvoidingView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import  {Ionicons,Feather} from '@expo/vector-icons';
 import { decrementQuantity, incrementQuantity, removeFromCart ,clearCart} from "../reduxStore/reducers/CartReducer";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
-import { CameraView, Camera } from "expo-camera/next";
+import { Camera } from 'expo-camera';
 
 
 const Cart = () => {
@@ -17,19 +17,22 @@ const Cart = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [studentID, setStudentID] = useState('');
+  const [parentEmail, setParentEmail] = useState('');
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [customer, setCustomer] = useState({
     BalAmount: 0
   });
+
+  //camera permision
   useEffect(() => {
-    const getCameraPermissions = async () => {
+    (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === "granted");
-    };
-    getCameraPermissions();
+      setHasPermission(status === 'granted');
+    })();
   }, []);
 
+//cart 
   useEffect(() => {
     const price = cart.reduce((acc, item) => acc + item.productAmount * item.quantity, 0);
     setTotalPrice(price);
@@ -67,29 +70,65 @@ const Cart = () => {
    
   };
 
-const changeStudentID = async (data) => {
-  try {
-    setStudentID(data.data);
-    console.log('Scanned data:', data.data,studentID);
-  } catch (error) {
-    if (error.response) {
-      setScanned(true);
-      const errorMessage = error.response.data.message;
-      alert(errorMessage);
-    } else {
-      console.error('Network error:', error.message);
-      alert('Network error. Please check your internet connection.');
+  const changeStudentID = async (barcodeData) => {
+    if (!barcodeData || typeof barcodeData.data !== 'string') {
+      console.error('Invalid barcode data format:', barcodeData);
+      alert('Invalid barcode data format. Please try again.');
+      return;
     }
-  }
-};
+  
+    const { data } = barcodeData;
+    setScanned(true);
+  
+    try {
+      const [receivedStudentID, receivedUserEmail] = data.split(',');
+      setStudentID(receivedStudentID);
+      setParentEmail(receivedUserEmail);
+      console.log('Scanned student ID:', receivedStudentID);
+      console.log('Scanned user email:', receivedUserEmail);
+    } catch (error) {
+      console.error('Error parsing barcode data:', error);
+      alert('Error parsing barcode data. Please try again.');
+    }
+  };
+  
+
+if (hasPermission === null) {
+  return <Text>Requesting for camera permission</Text>;
+}
+if (hasPermission === false) {
+  return <Text>No access to camera</Text>;
+}
 
 
   const checkout = async () => {
     try {
       const balAmount = parseFloat(customer.BalAmount);
       console.log('Data before update:', { BalAmount: balAmount, studentID:studentID });
-      const response = await axios.put(`https://pocket-money.up.railway.app/student/checkOut/${studentID}`, { BalAmount: balAmount });
+      const response = await axios.put(`https://pocket-money.up.railway.app/student/checkout/${studentID}`, { BalAmount: balAmount });
       console.log('Data after student update:', response.data);
+
+      //save transaction
+      const transactions = [];
+
+      cart.forEach(async item => {
+        const transaction = {
+          parent: parentEmail,
+          Amount: item.productAmount * item.quantity,
+          createdAt: new Date(),
+          confirmationCode : item.productName,
+          paymentAccount: userEmail,
+          paymentMethod: userEmail
+        };
+        transactions.push(transaction);
+        console.log('transactions',transactions)
+        const sellsTransactions =  await axios.post(`https://pocket-money.up.railway.app/transactions`, transactions);
+        console.log('saving transaction:', sellsTransactions.data);
+      })
+      
+
+
+
       dispatch(clearCart());
       alert('Payment made successfully!');
       setShowPayment(false);
@@ -136,51 +175,50 @@ const changeStudentID = async (data) => {
           <Text>Total Items: {cart.length}</Text>
           <Text>Total Price: KSH.{totalPrice.toFixed(2)}</Text>
         </View>
-        <View style={styles.containerSell}>
-            <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
-            <Text>Continue Selling</Text>
-          </Pressable>
-        </View>
+        {!showPayment ? (
+        <Pressable style={styles.buttonRed} onPress={togglePayment}>
+          <Text>Scan to Make Payment</Text>
+        </Pressable>
+      ) : (
   
-        <View style={styles.containerScan}>
-          {!showPayment ? (
-            <TouchableOpacity style={styles.buttonRed} onPress={togglePayment}>
-              <Text>Scan Qr</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.cameraContainer}>
-            {hasPermission === null ? (
-              <Text>Requesting for camera permission</Text>
-            ) : hasPermission === false ? (
-              <Text>No access to camera</Text>
-            ) : (
-              <CameraView
-                onBarcodeScanned={(data) => {
-                  try {
-                    if (!scanned) {
-                      changeStudentID(data);
-                    }
-                  } catch (error) {
-                    console.error('An error occurred:', error);
-                  }
-                }}
-                barcodeScannerSettings={{
-                  barcodeTypes: ["qr", "pdf417"],
-                }}
-                style={StyleSheet.absoluteFillObject}
-              />
-            )}
-            {scanned && studentID && (
-              <View>
-                <TouchableOpacity onPress={checkout}>
-                  <Text>PAY</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          
+      <>
+            {cart.length === 0 ? (
+                <View style={styles.emptyCartContainer}>
+                  <Text>Your cart is empty</Text>
+                  <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
+                    <Text>Continue Shopping</Text>
+                  </Pressable>
+                </View>
+              ) : (
+        <View style={styles.cameraContainer}>
+
+          <Text>scanner appears</Text>
+          {scanned && (
+            <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
           )}
+           <Camera
+            style={styles.cameraContainer}
+            onBarCodeScanned={scanned ? undefined : changeStudentID}
+          />
+          
+          {studentID !== '' && parentEmail !== '' && (
+            <View style={styles.dataContainer}>
+              {/* <Text style={styles.dataText}>Student ID: {studentID}</Text>
+              <Text style={styles.dataText}>Parent Email: {parentEmail}</Text> */}
+              <Text> scan completed click to  pay</Text>
+              <Pressable style={styles.buttonGreen} onPress={checkout}>
+          <Text> scan completed click to  pay</Text>
+        </Pressable>
+            </View>
+          )} 
         </View>
+      )}
+      </>
+    )}
+       
+         <Pressable style={styles.buttonGreen} onPress={navigateToProducts}>
+          <Text>Continue Selling</Text>
+        </Pressable>
       </KeyboardAvoidingView>
     );
 
@@ -191,6 +229,7 @@ export default Cart;
 
 const styles = StyleSheet.create({
   containerMain: {
+    flex: 1,
     backgroundColor: '#ECF6FC',
     alignItems: 'center',
     justifyContent: 'space-evenly',
@@ -284,11 +323,19 @@ buttonOne: {
 },
 cameraContainer: {
   flex: 1,
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: 'black',
-  width: '100%',
-  height: '100%',
+  height:'90%',
+  width:'100%'
+},
+dataContainer: {
+  position: 'absolute',
+  bottom: 50,
+  left: 0,
+  right: 0,
+  padding: 20,
+  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+},
+dataText: {
+  fontSize: 18,
+  marginBottom: 10,
 },
 })

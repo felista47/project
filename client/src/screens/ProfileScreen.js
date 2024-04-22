@@ -51,10 +51,11 @@ const ProfileScreen = () => {
 
   const signOut = async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
-      setAuthData(null,null,null,null);
+      await AsyncStorage.removeItem('account');
+     await setAuthData('', '', '', '', '');
+      console.log('Token set to null',accountType);
       navigation.navigate('WelcomeScreen');
-      console.log('Token set to null');
+
     } catch (error) {
       console.error('Error removing token:', error);
     }

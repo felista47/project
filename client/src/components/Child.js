@@ -27,21 +27,23 @@ const [newStudent,setNewStudent]=useState({
       fetchData();
     }, [userEmail]);
 
-    const fetchData = async () => {
-      try {
-        const response =await axios.get(`https://pocket-money.up.railway.app/student/parent/${userEmail}`);
-        const student = response.data;
-        setStudentData(student);
-        console.log('children data:',studentData);
-      } catch (error) {
-        console.error('Error fetching parents children data:', error);
-      }
-    };
-
-    const generateQRCode = (studentID)=>{
-      setQR(studentID)
-      console.log('Data before QR :',studentID);
+  const fetchData = async () => {
+    try {
+      const response =await axios.get(`https://pocket-money.up.railway.app/student/parent/${userEmail}`);
+      const student = response.data;
+      setStudentData(student);
+      console.log('children data:',studentData);
+    } catch (error) {
+      console.error('Error fetching parents children data:', error);
     }
+  };
+  
+  const generateQRCode = (studentID) => {
+      const dataToEmbed = `${studentID},${userEmail}`; // Concatenate student ID and user email
+      setQR(dataToEmbed);
+      console.log('Data before QR:', dataToEmbed);
+  };
+    
   
     useEffect(()=>{
       (async ()=>{ setHasPermissions((await MediaLibrary.requestPermissionsAsync()).granted) })()
@@ -111,6 +113,10 @@ const [newStudent,setNewStudent]=useState({
         </KeyboardAvoidingView>
       );
     };
+
+   
+
+    
     if (!studentData) {
       return (
         
